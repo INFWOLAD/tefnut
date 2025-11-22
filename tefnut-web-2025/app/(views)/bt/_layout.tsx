@@ -35,12 +35,37 @@ export default function BtLayout() {
         }}
       >
         <Stack.Screen
-          name="index"
+          name="login"
           options={{
             title: "",
             headerTitle: () =>
               Platform.OS === "android" ? (
-                <Text variant="heading">组件页</Text>
+                <Text variant="heading">登录</Text>
+              ) : undefined,
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  router.dismissAll();
+                  router.replace("/");
+                }}
+                style={{
+                  padding: 6,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Icon name={Home} size={24} color={primary} />
+              </Pressable>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="manage"
+          options={{
+            title: "",
+            headerTitle: () =>
+              Platform.OS === "android" ? (
+                <Text variant="heading">管理页</Text>
               ) : undefined,
             headerLeft: () => (
               <Pressable

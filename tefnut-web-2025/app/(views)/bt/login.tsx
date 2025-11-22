@@ -11,13 +11,12 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import { StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { router } from "expo-router";
 
-export default function BtScreen() {
+export default function BtLoginScreen() {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(true);
-  // 静默登录，不显示加载指示器，不显示toast
-  const [silence, setSilence] = useState(true);
   // 登录信息三要素
   const [logUrl, setLogUrl] = useState("");
   const [username, setUsername] = useState("");
@@ -31,28 +30,29 @@ export default function BtScreen() {
       const url = await SecureStore.getItemAsync("bt_url");
       console.log("Retrieved credentials:", { un, pw, url });
       if (un && pw && url) {
-        setUsername(un);
-        setPassword(pw);
-        setLogUrl(url);
         // 设置信息后自动登录
-        handleLogin();
+        handleLogin(url, un, pw, true);
       } else {
         // 没有保存的凭据, 停止加载状态, 加载用户登录页, 取消静默模式
         setLoading(false);
-        setSilence(false);
       }
     })();
   }, []);
 
   // 登录提交方法
-  function handleLogin() {
-    console.log("Logging in with:", { username, password, logUrl });
+  async function handleLogin(
+    Url: string,
+    Username: string,
+    Password: string,
+    silence = false // 是否静默登录
+  ) {
+    console.log("Logging in with:", { Username, Password, Url });
     setLoading(true);
     // 此处调用qb web api
-    axios
-      .post(
-        `${logUrl}/api/v2/auth/login`,
-        `username=${username}&password=${password}`,
+    try {
+      const response = await axios.post(
+        `${Url}/api/v2/auth/login`,
+        `username=${Username}&password=${Password}`,
         {
           headers: {
             Referer: "http://localhost:8080/",
@@ -60,40 +60,39 @@ export default function BtScreen() {
           },
           withCredentials: true,
         }
-      )
-      .then((response) => {
-        console.log("Login response:", response);
-        // api除非封禁否则默认200，因此需要检查返回内容
-        if (response.data.includes("Fails.")) {
-          console.log("登录失败");
-          toast({
-            title: "登录失败",
-            description: "请重新输入登录信息",
-            variant: "error",
-          });
-        } else if (response.status === 200) {
-          silence &&
-            toast({
-              title: "登录成功",
-              description: "正在跳转结果页...",
-              variant: "success",
-            });
-          SecureStore.setItemAsync("bt_username", username);
-          SecureStore.setItemAsync("bt_password", password);
-          SecureStore.setItemAsync("bt_url", logUrl);
-          // TODO: Navigate to the main BT management screen
-        }
-      })
-      .catch((error) => {
+      );
+      console.log("Login response:", response);
+      // api除非封禁否则默认200，因此需要检查返回内容
+      if (response.data.includes("Fails.")) {
+        console.log("登录失败");
         toast({
           title: "登录失败",
-          description: `${error}`,
+          description: "请重新输入登录信息",
           variant: "error",
         });
-      })
-      .finally(() => {
-        setLoading(false);
+      } else if (response.status === 200) {
+        !silence &&
+          toast({
+            title: "登录成功",
+            description: "正在跳转结果页...",
+            variant: "success",
+          });
+        SecureStore.setItemAsync("bt_username", Username);
+        SecureStore.setItemAsync("bt_password", Password);
+        SecureStore.setItemAsync("bt_url", Url);
+        // 跳转管理页，销毁登录页
+        // router.dismiss();
+        router.replace("/bt/manage");
+      }
+    } catch (error) {
+      toast({
+        title: "登录失败",
+        description: `${error}`,
+        variant: "error",
       });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -146,7 +145,10 @@ export default function BtScreen() {
               onChangeText={setPassword}
               secureTextEntry
             />
-            <Button onPress={handleLogin}>登录</Button>
+            {/* 用箭头函数调函数防止立刻执行 */}
+            <Button onPress={() => handleLogin(logUrl, username, password)}>
+              登录
+            </Button>
           </View>
         )}
       </KeyboardAvoidingView>
