@@ -1,13 +1,13 @@
-import { Stack } from 'expo-router';
-import { useColor } from '@/hooks/useColor';
-import { Platform, useColorScheme } from 'react-native';
-import { Text } from '@/components/ui/text';
-import { isLiquidGlassAvailable } from 'expo-glass-effect';
+import { Stack } from "expo-router";
+import { useColor } from "@/hooks/useColor";
+import { Platform, useColorScheme } from "react-native";
+import { Text } from "@/components/ui/text";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
 
 export default function SettingsLayout() {
   const theme = useColorScheme();
-  const text = useColor('text');
-  const background = useColor('background');
+  const text = useColor("text");
+  const background = useColor("background");
 
   return (
     <Stack
@@ -17,23 +17,23 @@ export default function SettingsLayout() {
         headerTintColor: text,
         headerBlurEffect: isLiquidGlassAvailable()
           ? undefined
-          : theme === 'dark'
-            ? 'systemMaterialDark'
-            : 'systemMaterialLight',
+          : theme === "dark"
+            ? "systemMaterialDark"
+            : "systemMaterialLight",
         headerStyle: {
           backgroundColor: isLiquidGlassAvailable()
-            ? 'transparent'
+            ? "transparent"
             : background,
         },
       }}
     >
       <Stack.Screen
-        name='index'
+        name="index"
         options={{
-          title: 'Settings',
+          title: "设置",
           headerTitle: () =>
-            Platform.OS === 'android' ? (
-              <Text variant='heading'>Settings</Text>
+            Platform.OS === "android" ? (
+              <Text variant="heading">设置</Text>
             ) : undefined,
         }}
       />

@@ -1,15 +1,15 @@
-import { Text } from '@/components/ui/text';
-import { useColor } from '@/hooks/useColor';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { SearchProvider, useSearch } from '@/providers/search-context';
-import { isLiquidGlassAvailable } from 'expo-glass-effect';
-import { Stack } from 'expo-router';
-import { Platform } from 'react-native';
+import { Text } from "@/components/ui/text";
+import { useColor } from "@/hooks/useColor";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { SearchProvider, useSearch } from "@/providers/search-context";
+import { isLiquidGlassAvailable } from "expo-glass-effect";
+import { Stack } from "expo-router";
+import { Platform } from "react-native";
 
 function SearchLayoutContent() {
   const theme = useColorScheme();
-  const text = useColor('text');
-  const background = useColor('background');
+  const text = useColor("text");
+  const background = useColor("background");
   const { setSearchText } = useSearch();
 
   return (
@@ -20,27 +20,27 @@ function SearchLayoutContent() {
         headerTintColor: text,
         headerBlurEffect: isLiquidGlassAvailable()
           ? undefined
-          : theme === 'dark'
-          ? 'systemMaterialDark'
-          : 'systemMaterialLight',
+          : theme === "dark"
+            ? "systemMaterialDark"
+            : "systemMaterialLight",
         headerStyle: {
           backgroundColor: isLiquidGlassAvailable()
-            ? 'transparent'
+            ? "transparent"
             : background,
         },
       }}
     >
       <Stack.Screen
-        name='index'
+        name="index"
         options={{
-          title: 'Search',
+          title: "搜索",
           headerTitle: () =>
-            Platform.OS === 'android' ? (
-              <Text variant='heading'>Search</Text>
+            Platform.OS === "android" ? (
+              <Text variant="heading">搜索</Text>
             ) : undefined,
           headerSearchBarOptions: {
-            placement: 'automatic',
-            placeholder: 'Search',
+            placement: "automatic",
+            placeholder: "Search",
             onChangeText: (event) => {
               setSearchText(event.nativeEvent.text);
             },

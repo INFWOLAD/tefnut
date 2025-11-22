@@ -16,7 +16,7 @@ export default function HomeScreen() {
     <View
       style={{
         flex: 1,
-        gap: 16,
+        gap: 22,
         padding: 20,
         justifyContent: "center",
       }}
@@ -30,17 +30,16 @@ export default function HomeScreen() {
         Tefnut (Beta)
       </Text>
 
-      <Link asChild href="/sheet">
+      {/* <Link asChild href="/sheet">
         <Button>Open Components Sheet</Button>
-      </Link>
+      </Link> */}
       <Button
         onPress={() => {
           console.log("Navigating to /bt");
           router.navigate("/bt");
         }}
-        variant="outline"
       >
-        Go to BT component
+        QBittorrent管理
       </Button>
     </View>
   );

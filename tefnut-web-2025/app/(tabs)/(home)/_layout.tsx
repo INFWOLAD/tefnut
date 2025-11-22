@@ -31,10 +31,10 @@ export default function HomeLayout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "",
           headerTitle: () =>
             Platform.OS === "android" ? (
-              <Text variant="heading">Home</Text>
+              <Text variant="heading">首页</Text>
             ) : undefined,
         }}
       />
