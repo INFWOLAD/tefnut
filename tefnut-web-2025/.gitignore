@@ -1,0 +1,22 @@
+# Ignore TypeScript declaration files
+*.d.ts
+
+# Ignore Expo environment declaration file
+expo-env.d.ts
+
+# Ignore common directories and files
+node_modules/
+build/
+dist/
+coverage/
+
+# Ignore log files and temporary files
+*.log
+*.tmp
+.DS_Store
+
+# Ignore IDE specific files
+.vscode/
+
+# Ignore environment variable files
+.env.local
