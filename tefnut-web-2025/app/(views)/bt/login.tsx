@@ -4,18 +4,21 @@ import { Spinner } from "@/components/ui/spinner";
 import { View } from "@/components/ui/view";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
-import { Lock, User, Link, CloudDownload } from "lucide-react-native";
+import { AvoidKeyboard } from "@/components/ui/avoid-keyboard";
+import { Lock, User, Link, CloudDownload, X } from "lucide-react-native";
 import { Input } from "@/components/ui/input";
 import { SafeAreaView } from "react-native-safe-area-context";
-import axios from "axios";
+import { request, createRequestController } from "@/utils/request";
 import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import { StyleSheet, KeyboardAvoidingView, Platform } from "react-native";
+import { StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
 
 export default function BtLoginScreen() {
   const { toast } = useToast();
-
+  // 用于中断请求
+  const controller = createRequestController();
+  // 加载中
   const [loading, setLoading] = useState(true);
   // 登录信息三要素
   const [logUrl, setLogUrl] = useState("");
@@ -50,46 +53,32 @@ export default function BtLoginScreen() {
     setLoading(true);
     // 此处调用qb web api
     try {
-      const response = await axios.post(
-        `${Url}/api/v2/auth/login`,
-        `username=${Username}&password=${Password}`,
-        {
-          headers: {
-            Referer: "http://localhost:8080/",
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          withCredentials: true,
-        }
-      );
-      console.log("Login response:", response);
-      // api除非封禁否则默认200，因此需要检查返回内容
-      if (response.data.includes("Fails.")) {
-        console.log("登录失败");
-        toast({
-          title: "登录失败",
-          description: "请重新输入登录信息",
-          variant: "error",
-        });
-      } else if (response.status === 200) {
-        !silence &&
-          toast({
-            title: "登录成功",
-            description: "正在跳转结果页...",
-            variant: "success",
-          });
-        SecureStore.setItemAsync("bt_username", Username);
-        SecureStore.setItemAsync("bt_password", Password);
-        SecureStore.setItemAsync("bt_url", Url);
-        // 跳转管理页，销毁登录页
-        // router.dismiss();
-        router.replace("/bt/manage");
-      }
-    } catch (error) {
-      toast({
-        title: "登录失败",
-        description: `${error}`,
-        variant: "error",
+      const response = await request({
+        url: `${Url}/api/v2/auth/login`,
+        data: `username=${Username}&password=${Password}`,
+        headers: {
+          Referer: "http://localhost:8080/",
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method: "POST",
+        toast,
+        specialErr: { keywords: "Fails.", msg: "请重新输入登录信息" },
+        controller,
       });
+      !silence &&
+        toast({
+          title: "登录成功",
+          description: "正在跳转结果页...",
+          variant: "success",
+        });
+      SecureStore.setItemAsync("bt_username", Username);
+      SecureStore.setItemAsync("bt_password", Password);
+      SecureStore.setItemAsync("bt_url", Url);
+      // 跳转管理页，销毁登录页
+      // router.dismiss();
+      router.replace("/bt/manage");
+    } catch (error) {
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -102,56 +91,64 @@ export default function BtLoginScreen() {
         gap: 16,
       }}
     >
-      {/* 键盘避免视图 */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        {/* 加载页面 */}
-        {loading && (
+      {/* 加载页面 */}
+      {loading && (
+        <>
           <View style={styles.centerCommon}>
-            <Spinner variant="bars" />
+            <Spinner variant="bars" size="lg" />
           </View>
-        )}
-        {/* 登录信息填写页 */}
-        {!loading && (
-          <View style={[styles.centerCommon, { paddingBottom: 20 }]}>
-            {/* 表单上方logo */}
-            <Icon
-              name={CloudDownload}
-              size={48}
-              style={{ alignSelf: "center", marginBottom: 30 }}
-            />
-            <Input
-              label="QB地址"
-              placeholder="http://xxx:xxx"
-              icon={Link}
-              value={logUrl}
-              onChangeText={setLogUrl}
-              keyboardType="web-search"
-            />
-            <Input
-              label="用户名"
-              placeholder="qbittorrent用户名"
-              icon={User}
-              value={username}
-              onChangeText={setUsername}
-            />
-            <Input
-              label="密码"
-              placeholder="请输入"
-              icon={Lock}
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-            />
-            {/* 用箭头函数调函数防止立刻执行 */}
-            <Button onPress={() => handleLogin(logUrl, username, password)}>
-              登录
-            </Button>
-          </View>
-        )}
-      </KeyboardAvoidingView>
+          <Button
+            size="icon"
+            variant="outline"
+            icon={X}
+            onPress={() => {
+              console.log("中断");
+              controller.abort();
+            }}
+            style={{ alignSelf: "center", bottom: 20 }}
+          />
+        </>
+      )}
+      {/* 登录信息填写页 */}
+      {!loading && (
+        <View style={[styles.centerCommon, { paddingBottom: 20 }]}>
+          {/* 表单上方logo */}
+          <Icon
+            name={CloudDownload}
+            size={48}
+            style={{ alignSelf: "center", marginBottom: 30 }}
+          />
+          <Input
+            label="QB地址"
+            placeholder="http://xxx:xxx"
+            icon={Link}
+            value={logUrl}
+            onChangeText={setLogUrl}
+            keyboardType="web-search"
+          />
+          <Input
+            label="用户名"
+            placeholder="qbittorrent用户名"
+            icon={User}
+            value={username}
+            onChangeText={setUsername}
+          />
+          <Input
+            label="密码"
+            placeholder="请输入"
+            icon={Lock}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+          {/* 用箭头函数调函数防止立刻执行 */}
+          <Button onPress={() => handleLogin(logUrl, username, password)}>
+            登录
+          </Button>
+          {/* 键盘规避with animate */}
+          <AvoidKeyboard />
+        </View>
+      )}
     </SafeAreaView>
   );
 }
