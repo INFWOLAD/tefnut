@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { request, createRequestController } from "@/utils/request";
 import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import { StyleSheet, Pressable } from "react-native";
+import { StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useStore } from "@/stores/bt/bt";
 
