@@ -13,37 +13,17 @@ import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import { StyleSheet } from "react-native";
 import { router } from "expo-router";
-import { useStore } from "@/stores/bt/bt";
 
 export default function BtLoginScreen() {
   const { toast } = useToast();
   // 用于中断请求
   const controller = createRequestController();
   // 加载中
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   // 登录信息三要素
   const [logUrl, setLogUrl] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
-  const btStore = useStore();
-
-  useEffect(() => {
-    // 尝试从安全存储中获取已保存的凭据并自动登录
-    (async () => {
-      const un = await SecureStore.getItemAsync("bt_username");
-      const pw = await SecureStore.getItemAsync("bt_password");
-      const url = await SecureStore.getItemAsync("bt_url");
-      console.log("Retrieved credentials:", { un, pw, url });
-      if (un && pw && url) {
-        // 设置信息后自动登录
-        handleLogin(url, un, pw, true);
-      } else {
-        // 没有保存的凭据, 停止加载状态, 加载用户登录页, 取消静默模式
-        setLoading(false);
-      }
-    })();
-  }, []);
 
   // 登录提交方法
   async function handleLogin(
@@ -71,13 +51,12 @@ export default function BtLoginScreen() {
       !silence &&
         toast({
           title: "登录成功",
-          description: "正在跳转结果页...",
+          description: "",
           variant: "success",
         });
       SecureStore.setItemAsync("bt_username", Username);
       SecureStore.setItemAsync("bt_password", Password);
       SecureStore.setItemAsync("bt_url", Url);
-      btStore.setUrl(Url);
       // 跳转管理页，销毁登录页
       // router.dismiss();
       router.replace("/bt/manage");

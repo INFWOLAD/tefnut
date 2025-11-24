@@ -14,8 +14,9 @@ import { useNavigation } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { useEffect, useState, useRef } from "react";
 import { Pressable } from "react-native";
-import { useStore } from "@/stores/bt/bt";
 import { request } from "@/utils/request";
+import * as SecureStore from "expo-secure-store";
+import { router } from "expo-router";
 
 const stateMap: { [key: string]: string } = {
   error: "错误",
@@ -50,77 +51,87 @@ export default function BtManageScreen() {
   // 种子添加加载状态
   const [adding, setAdding] = useState(false);
 
-  // zustand
-  const btStore = useStore();
-
   // 计时器id，防止重复生成
   const intervalRef = useRef<number | null>(null);
+  const btUrl = useRef<string | null>("");
 
   useEffect(() => {
-    console.log("Current URL from store:", btStore.url);
-    navigation.setOptions({
-      title: "",
-      headerRight: () => (
-        <>
-          {/* 手动刷新 */}
-          <Pressable
-            onPress={() => {
-              fetchTorrents();
-            }}
-            style={{
-              padding: 6,
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 20,
-            }}
-          >
-            <Icon name={RefreshCcw} size={24} />
-          </Pressable>
-          {/* 直接读取剪贴板添加 */}
-          <Pressable
-            onPress={() => {
-              console.log("Add torrent via clipboard");
-              handleClipboardAdd();
-            }}
-            style={{
-              padding: 6,
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 20,
-            }}
-          >
-            {adding && <Spinner />}
-            {!adding && <Icon name={Zap} size={24} />}
-          </Pressable>
-          {/* 手动添加 */}
-          <Pressable
-            onPress={() => {
-              console.log("Add torrent button pressed");
-              magnetBottomSheet.open();
-            }}
-            style={{
-              padding: 6,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Icon name={Plus} size={24} />
-          </Pressable>
-        </>
-      ),
-    });
-  }, []);
-
-  // 拉起页面加载计时器，页面销毁清除计时器
-  useEffect(() => {
-    startInterval();
-    // 卸载组件时执行清理
-    return () => {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
+    (async () => {
+      btUrl.current = await SecureStore.getItemAsync("bt_url");
+      try {
+        const response = await request({
+          url: `${btUrl.current}/api/v2/app/version`,
+          method: "POST",
+          toast,
+          silence: true,
+        });
+        console.log(`登录成功，qb版本：${response}`);
+      } catch (err) {
+        router.replace("/bt/login");
+        return;
       }
-    };
+
+      navigation.setOptions({
+        title: "",
+        headerRight: () => (
+          <>
+            {/* 手动刷新 */}
+            <Pressable
+              onPress={() => {
+                fetchTorrents();
+              }}
+              style={{
+                padding: 6,
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 20,
+              }}
+            >
+              <Icon name={RefreshCcw} size={24} />
+            </Pressable>
+            {/* 直接读取剪贴板添加 */}
+            <Pressable
+              onPress={() => {
+                console.log("Add torrent via clipboard");
+                handleClipboardAdd();
+              }}
+              style={{
+                padding: 6,
+                justifyContent: "center",
+                alignItems: "center",
+                marginRight: 20,
+              }}
+            >
+              {adding && <Spinner />}
+              {!adding && <Icon name={Zap} size={24} />}
+            </Pressable>
+            {/* 手动添加 */}
+            <Pressable
+              onPress={() => {
+                console.log("Add torrent button pressed");
+                magnetBottomSheet.open();
+              }}
+              style={{
+                padding: 6,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Icon name={Plus} size={24} />
+            </Pressable>
+          </>
+        ),
+      });
+      // 拉起页面加载计时器，页面销毁清除计时器
+      startInterval();
+      // 卸载组件时执行清理
+      return () => {
+        if (intervalRef.current !== null) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+      };
+    })();
   }, []);
 
   // 快速剪贴板添加
@@ -152,7 +163,7 @@ export default function BtManageScreen() {
     !silence && setLoading(true);
     try {
       const response = await request({
-        url: `${btStore.url}/api/v2/sync/maindata?rid=${rid}`,
+        url: `${btUrl.current}/api/v2/sync/maindata?rid=${rid}`,
         method: "POST",
         toast,
       });
@@ -182,7 +193,7 @@ export default function BtManageScreen() {
     magnetBottomSheet.close();
     // 从zustand中取login的url
     const response = await request({
-      url: `${btStore.url}/api/v2/torrents/add`,
+      url: `${btUrl.current}/api/v2/torrents/add`,
       method: "POST",
       data: formData,
       toast,

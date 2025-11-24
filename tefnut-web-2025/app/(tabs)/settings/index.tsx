@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { ModeToggle } from "@/components/ui/mode-toggle";
@@ -6,6 +7,7 @@ import { Text } from "@/components/ui/text";
 import { View } from "@/components/ui/view";
 import { useColor } from "@/hooks/useColor";
 import { Code, Eye, Palette, Settings } from "lucide-react-native";
+import * as SecureStore from "expo-secure-store";
 
 export default function SettingsScreen() {
   const card = useColor("card");
@@ -76,6 +78,17 @@ export default function SettingsScreen() {
             </Card>
           ))}
         </View>
+        <Button
+          onPress={() => {
+            SecureStore.setItemAsync("bt_username", "");
+            SecureStore.setItemAsync("bt_password", "");
+            SecureStore.setItemAsync("bt_url", "");
+          }}
+          variant="destructive"
+          style={{ marginTop: 12 }}
+        >
+          QB清空用户信息
+        </Button>
       </View>
     </ScrollView>
   );

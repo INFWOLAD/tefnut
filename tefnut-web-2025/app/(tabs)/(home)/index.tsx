@@ -35,8 +35,8 @@ export default function HomeScreen() {
       </Link> */}
       <Button
         onPress={() => {
-          console.log("Navigating to /bt/login");
-          router.navigate("/bt/login");
+          console.log("Navigating to /bt/manage");
+          router.navigate("/bt/manage");
         }}
       >
         QBittorrent管理
