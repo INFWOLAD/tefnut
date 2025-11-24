@@ -3,6 +3,7 @@
 
 # Ignore Expo environment declaration file
 expo-env.d.ts
+.expo
 
 # Ignore common directories and files
 node_modules/
