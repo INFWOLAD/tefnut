@@ -25,6 +25,21 @@ export default function BtLoginScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    // 尝试从安全存储中获取已保存的凭据
+    (async () => {
+      const un = await SecureStore.getItemAsync("bt_username");
+      const pw = await SecureStore.getItemAsync("bt_password");
+      const url = await SecureStore.getItemAsync("bt_url");
+      console.log("Retrieved credentials:", { un, pw, url });
+      if (un && pw && url) {
+        setLogUrl(url);
+        setUsername(un);
+        setPassword(pw);
+      }
+    })();
+  }, []);
+
   // 登录提交方法
   async function handleLogin(
     Url: string,
