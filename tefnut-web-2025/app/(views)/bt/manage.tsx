@@ -4,25 +4,34 @@ import { View } from "@/components/ui/view";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
 import { Plus, Zap } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable } from "react-native";
+import { useStore } from "@/stores/bt/bt";
+import { request } from "@/utils/request";
 
 export default function BtManageScreen() {
+  const { toast } = useToast();
   const navigation = useNavigation();
   const magnetBottomSheet = useBottomSheet();
 
   // 磁力链接输入内容
   const [magnet, setMagnet] = useState("");
 
+  // zustand
+  const btStore = useStore();
+
   useEffect(() => {
+    console.log("Current URL from store:", btStore.url);
     navigation.setOptions({
       title: "首页",
       headerRight: () => (
         <>
+          {/* 直接读取剪贴板添加 */}
           <Pressable
             onPress={() => {
               console.log("Add torrent button pressed");
@@ -37,6 +46,7 @@ export default function BtManageScreen() {
           >
             <Icon name={Zap} size={24} />
           </Pressable>
+          {/* 手动添加 */}
           <Pressable
             onPress={() => {
               console.log("Add torrent button pressed");
@@ -55,10 +65,21 @@ export default function BtManageScreen() {
     });
   }, []);
 
-  function handleSubmit() {
+  // 添加磁力
+  async function handleSubmit() {
     // 处理提交逻辑
     console.log("Submitted:", { magnet });
+    const formData = new FormData();
+    formData.append("urls", magnet);
     magnetBottomSheet.close();
+    // 从zustand中取login的url
+    const response = await request({
+      url: `${btStore.url}/api/v2/torrents/add`,
+      method: "POST",
+      data: formData,
+      toast,
+    });
+    console.log("Add torrent response:", response);
   }
 
   return (

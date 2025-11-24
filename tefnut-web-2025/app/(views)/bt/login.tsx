@@ -13,6 +13,7 @@ import { useState, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import { StyleSheet, Pressable } from "react-native";
 import { router } from "expo-router";
+import { useStore } from "@/stores/bt/bt";
 
 export default function BtLoginScreen() {
   const { toast } = useToast();
@@ -24,6 +25,8 @@ export default function BtLoginScreen() {
   const [logUrl, setLogUrl] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  const btStore = useStore();
 
   useEffect(() => {
     // 尝试从安全存储中获取已保存的凭据并自动登录
@@ -74,6 +77,7 @@ export default function BtLoginScreen() {
       SecureStore.setItemAsync("bt_username", Username);
       SecureStore.setItemAsync("bt_password", Password);
       SecureStore.setItemAsync("bt_url", Url);
+      btStore.setUrl(Url);
       // 跳转管理页，销毁登录页
       // router.dismiss();
       router.replace("/bt/manage");
