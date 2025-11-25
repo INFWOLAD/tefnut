@@ -24,3 +24,4 @@ coverage/
 
 # Ignore ios build direction
 ios/
+android/

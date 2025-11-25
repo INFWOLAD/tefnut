@@ -3,14 +3,14 @@
     "name": "tefnut",
     "slug": "tefnut",
     "scheme": "tefnut",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.tefnut"
+      "bundleIdentifier": "com.cosz.tefnut"
     },
     "android": {
       "adaptiveIcon": {
@@ -20,7 +20,8 @@
         "monochromeImage": "./assets/images/splash.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": true
+      "predictiveBackGestureEnabled": true,
+      "package": "com.cosz.tefnut"
     },
     "web": {
       "output": "static",
