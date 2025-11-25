@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
+import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { useActionSheet } from "@/components/ui/action-sheet";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
@@ -13,7 +14,9 @@ import {
   Plus,
   ClipboardPaste,
   RefreshCcw,
-  Ellipsis,
+  Pause,
+  Trash2,
+  Play,
 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "expo-router";
@@ -54,60 +57,17 @@ export default function BtManageScreen() {
   // 刷新用rid
   const [rid, setRid] = useState<number>(0);
   // 种子列表加载状态
-  const [loading, setLoading] = useState(true);
+  const [listLoading, setListLoading] = useState(true);
   // 种子添加加载状态
   const [adding, setAdding] = useState(false);
+  // 种子管理加载状态
+  const [manageLoading, setManageLoading] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   // 计时器id，防止重复生成
   const intervalRef = useRef<number | null>(null);
   const btUrl = useRef<string | null>("");
-
-  function showExeOptions(state: string, hash: string) {
-    const options = [];
-    if (state === "downloading") {
-      options.push({
-        title: "暂停",
-        onPress: async () => {
-          const response = await request({
-            url: `${btUrl.current}/api/v2/torrents/pause`,
-            data: `hashes=${hash}`,
-            method: "POST",
-            toast,
-          });
-        },
-        destructive: false,
-      });
-    } else if (state === "pausedDL") {
-      options.push({
-        title: "继续",
-        onPress: async () => {
-          const response = await request({
-            url: `${btUrl.current}/api/v2/torrents/resume`,
-            data: `hashes=${hash}`,
-            method: "POST",
-            toast,
-          });
-        },
-        destructive: false,
-      });
-    }
-    options.push({
-      title: "删除文件",
-      onPress: async () => {
-        console.log(`删除文件${hash}, url:${btUrl.current}`);
-        const response = await request({
-          url: `${btUrl.current}/api/v2/torrents/delete`,
-          data: `hashes=${hash}&deleteFiles=true`,
-          method: "POST",
-          toast,
-        });
-      },
-      destructive: true,
-    });
-    actionSheet.show({
-      options: options,
-    });
-  }
 
   useEffect(() => {
     (async () => {
@@ -214,7 +174,7 @@ export default function BtManageScreen() {
 
   // 拉取任务列表
   async function fetchTorrents(silence = false) {
-    !silence && setLoading(true);
+    !silence && setListLoading(true);
     try {
       const response = await request({
         // url: `${btUrl.current}/api/v2/sync/maindata?rid=${rid}`,
@@ -234,7 +194,7 @@ export default function BtManageScreen() {
       console.log("Error fetching torrents:", error);
       return false;
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
     // 由于网络问题导致请求失败，手动刷新时重新拉起计时器
     startInterval();
@@ -272,10 +232,54 @@ export default function BtManageScreen() {
     }
   }
 
+  // 操作按钮统一方法
+  function getManageButton(
+    iconName: React.ComponentType,
+    hash: string,
+    url: string,
+    type:
+      | "link"
+      | "success"
+      | "default"
+      | "destructive"
+      | "outline"
+      | "secondary"
+      | "ghost"
+  ) {
+    return (
+      <Button
+        icon={iconName}
+        size="icon"
+        loading={!!manageLoading[hash]}
+        onPress={async () => {
+          setManageLoading((prev) => ({
+            ...prev,
+            [hash]: true,
+          }));
+          try {
+            const response = await request({
+              url: url,
+              data: `hashes=${hash}`,
+              method: "POST",
+              toast,
+            });
+          } catch (err) {
+          } finally {
+            setManageLoading((prev) => ({
+              ...prev,
+              [hash]: false,
+            }));
+          }
+        }}
+        variant={type}
+      />
+    );
+  }
+
   return (
     <>
       <SafeAreaView style={{ flex: 1 }}>
-        {loading && (
+        {listLoading && (
           <View
             style={{
               flex: 1,
@@ -287,7 +291,7 @@ export default function BtManageScreen() {
             <Spinner variant="dots" />
           </View>
         )}
-        {!loading && (
+        {!listLoading && (
           <ScrollView
             style={{
               flex: 1,
@@ -303,13 +307,21 @@ export default function BtManageScreen() {
                     <Text style={{ marginBottom: 8, fontWeight: "600" }}>
                       {torrent.name}
                     </Text>
-                    <View style={{ flexDirection: "row" }}>
+                    <Text
+                      variant="caption"
+                      style={{
+                        color: "#666",
+                        fontSize: 12,
+                        textAlign: "right",
+                      }}
+                    >
+                      {(torrent.progress * 100).toFixed(2)}%
+                    </Text>
+                    <Progress value={torrent.progress * 100} height={5} />
+                    <View style={{ flexDirection: "row", marginTop: 8 }}>
                       <View style={{ flex: 1 }}>
                         <Text>
                           状态: {stateMap[torrent.state] || torrent.state}
-                        </Text>
-                        <Text>
-                          进度: {(torrent.progress * 100).toFixed(2)}%
                         </Text>
                         <Text>
                           下载速度: {(torrent.dlspeed / 1024 / 1024).toFixed(2)}{" "}
@@ -320,15 +332,33 @@ export default function BtManageScreen() {
                           MB/s
                         </Text>
                       </View>
-                      <View style={{ justifyContent: "center" }}>
-                        <Button
-                          icon={Ellipsis}
-                          size="icon"
-                          onPress={() => {
-                            console.log(torrent);
-                            showExeOptions(torrent.state, torrent.hash);
-                          }}
-                        />
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignSelf: "center",
+                          gap: 8,
+                        }}
+                      >
+                        {torrent.state === "downloading" &&
+                          getManageButton(
+                            Pause,
+                            torrent.hash,
+                            `${btUrl.current}/api/v2/torrents/pause`,
+                            "outline"
+                          )}
+                        {torrent.state === "pausedDL" &&
+                          getManageButton(
+                            Play,
+                            torrent.hash,
+                            `${btUrl.current}/api/v2/torrents/resume`,
+                            "default"
+                          )}
+                        {getManageButton(
+                          Trash2,
+                          torrent.hash,
+                          `${btUrl.current}/api/v2/torrents/delete`,
+                          "destructive"
+                        )}
                       </View>
                     </View>
                   </CardContent>
@@ -382,7 +412,6 @@ export default function BtManageScreen() {
           </ScrollView>
         )}
       </SafeAreaView>
-      {actionSheet.ActionSheet}
     </>
   );
 }
