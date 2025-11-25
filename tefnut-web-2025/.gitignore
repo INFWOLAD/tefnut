@@ -21,3 +21,6 @@ coverage/
 
 # Ignore environment variable files
 .env.local
+
+# Ignore ios build direction
+ios/
