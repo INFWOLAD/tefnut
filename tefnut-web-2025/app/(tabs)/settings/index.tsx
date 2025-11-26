@@ -10,6 +10,8 @@ import {
 import { ScrollView } from "@/components/ui/scroll-view";
 import { View } from "@/components/ui/view";
 import { Input } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { Badge } from "@/components/ui/badge";
 import { AvoidKeyboard } from "@/components/ui/avoid-keyboard";
 import { Lock, User, Link } from "lucide-react-native";
 import * as SecureStore from "expo-secure-store";
@@ -57,10 +59,36 @@ export default function SettingsScreen() {
       >
         <View style={{ gap: 4, marginTop: 8 }}>
           <Card>
-            <CardHeader style={{ marginLeft: 6 }}>
+            <CardHeader
+              style={{
+                marginHorizontal: 6,
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
               <CardTitle>Bt下载</CardTitle>
               <CardDescription>
-                {btloginfo.loggedIn ? "已登录" : "未登录"}
+                <Text>
+                  {loading ? "登陆中" : btloginfo.loggedIn ? "在线" : "离线"}
+                </Text>
+                <Badge
+                  variant={
+                    loading
+                      ? "outline"
+                      : btloginfo.loggedIn
+                        ? "success"
+                        : "destructive"
+                  }
+                  style={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: 8,
+                    paddingHorizontal: 0,
+                    paddingVertical: 0,
+                  }}
+                >
+                  <View />
+                </Badge>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -73,7 +101,7 @@ export default function SettingsScreen() {
                     value={logUrl}
                     onChangeText={setLogUrl}
                     keyboardType="web-search"
-                    variant="outline"
+                    variant={btloginfo.loggedIn ? "filled" : "outline"}
                     disabled={btloginfo.loggedIn}
                   />
                 </View>
@@ -84,7 +112,7 @@ export default function SettingsScreen() {
                     icon={User}
                     value={username}
                     onChangeText={setUsername}
-                    variant="outline"
+                    variant={btloginfo.loggedIn ? "filled" : "outline"}
                     disabled={btloginfo.loggedIn}
                   />
                 </View>
@@ -105,7 +133,7 @@ export default function SettingsScreen() {
               </View>
             </CardContent>
             <CardFooter>
-              {btloginfo.loggedIn && (
+              {btloginfo.loggedIn && !loading && (
                 <Button
                   onPress={() => {
                     SecureStore.setItemAsync("bt_username", "");
@@ -114,6 +142,7 @@ export default function SettingsScreen() {
                     btloginfo.setLoggedIn(false);
                   }}
                   variant="destructive"
+                  style={{ flex: 1 }}
                 >
                   登出
                 </Button>
