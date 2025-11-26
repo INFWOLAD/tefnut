@@ -1,17 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Icon } from "@/components/ui/icon";
-import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
 import { View } from "@/components/ui/view";
 import { useColor } from "@/hooks/useColor";
-import { Terminal } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { useStore as useBtStore } from "@/stores/bt/loginfo";
+import { showSuccessAlert } from "@/components/ui/alert";
 
 export default function HomeScreen() {
   const green = useColor("green");
   const muted = useColor("muted");
   const router = useRouter();
+  const btloginfo = useBtStore();
   return (
     <View
       style={{
@@ -36,7 +35,13 @@ export default function HomeScreen() {
       <Button
         onPress={() => {
           console.log("Navigating to /bt/manage");
-          router.navigate("/bt/manage");
+          btloginfo.loggedIn
+            ? router.navigate("/bt/manage")
+            : showSuccessAlert(
+                "请确认登录状态",
+                "您可以在设置-BT设置中登入以使用该功能",
+                () => console.log("未登录完成")
+              );
         }}
       >
         QBittorrent管理

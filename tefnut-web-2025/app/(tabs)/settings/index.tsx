@@ -1,108 +1,155 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Icon } from "@/components/ui/icon";
-import { ModeToggle } from "@/components/ui/mode-toggle";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Text } from "@/components/ui/text";
 import { View } from "@/components/ui/view";
-import { useColor } from "@/hooks/useColor";
-import { Code, Eye, Palette, Settings } from "lucide-react-native";
+import { Input } from "@/components/ui/input";
+import { AvoidKeyboard } from "@/components/ui/avoid-keyboard";
+import { Lock, User, Link } from "lucide-react-native";
 import * as SecureStore from "expo-secure-store";
+import { useEffect, useState } from "react";
+import { useStore as useBtStore } from "@/stores/bt/loginfo";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useBtLogin } from "@/hooks/useBtLogin";
+import { createRequestController } from "@/utils/request";
 
 export default function SettingsScreen() {
-  const card = useColor("card");
-  const border = useColor("border");
-  const primary = useColor("primary");
+  // 登录hook
+  const { btLogin, loading } = useBtLogin();
+  // 登录信息三要素
+  const [logUrl, setLogUrl] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  // bt zustand
+  const btloginfo = useBtStore();
+  // 请求中断
+  const controller = createRequestController();
+
+  useEffect(() => {
+    // 尝试从安全存储中获取已保存的凭据
+    (async () => {
+      const un = await SecureStore.getItemAsync("bt_username");
+      const pw = await SecureStore.getItemAsync("bt_password");
+      const url = await SecureStore.getItemAsync("bt_url");
+      console.log("Retrieved credentials:", { un, pw, url });
+      if (un && pw && url) {
+        setLogUrl(url);
+        setUsername(un);
+        const result = await btLogin(url, un, pw, controller, true);
+        result && btloginfo.setLoggedIn(true);
+      }
+    })();
+  }, []);
 
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{
-        flex: 1,
-        gap: 18,
-        paddingTop: 96,
-        alignItems: "center",
-      }}
-    >
-      <ModeToggle />
-
-      <View
+    <SafeAreaView style={{ flex: 1 }}>
+      <ScrollView
         style={{
-          width: "90%",
-          marginBottom: 40,
+          flex: 1,
+          padding: 24,
         }}
       >
-        <Text
-          variant="title"
-          style={{
-            textAlign: "center",
-            marginBottom: 24,
-            fontWeight: "700",
-          }}
-        >
-          Tefnut 功能
-        </Text>
-
-        <View
-          style={{
-            gap: 12,
-          }}
-        >
-          {features.map((feature, index) => (
-            <Card
-              key={index}
-              style={{
-                flexDirection: "row",
-                alignItems: "flex-start",
-                gap: 12,
-              }}
-            >
-              <Icon name={feature.icon} size={24} color={primary} />
-
-              <View
-                style={{
-                  flex: 1,
-                }}
-              >
-                <Text
-                  variant="body"
-                  style={{
-                    fontWeight: "600",
-                    marginBottom: 4,
+        <View style={{ gap: 4, marginTop: 8 }}>
+          <Card>
+            <CardHeader style={{ marginLeft: 6 }}>
+              <CardTitle>Bt下载</CardTitle>
+              <CardDescription>
+                {btloginfo.loggedIn ? "已登录" : "未登录"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <View style={{ gap: 16 }}>
+                <View>
+                  <Input
+                    label="QB地址"
+                    placeholder="http://xxx:xxx"
+                    icon={Link}
+                    value={logUrl}
+                    onChangeText={setLogUrl}
+                    keyboardType="web-search"
+                    variant="outline"
+                    disabled={btloginfo.loggedIn}
+                  />
+                </View>
+                <View>
+                  <Input
+                    label="用户名"
+                    placeholder="qbittorrent用户名"
+                    icon={User}
+                    value={username}
+                    onChangeText={setUsername}
+                    variant="outline"
+                    disabled={btloginfo.loggedIn}
+                  />
+                </View>
+                {/* 登录状态下不展示密码 */}
+                {!btloginfo.loggedIn && (
+                  <View>
+                    <Input
+                      label="密码"
+                      placeholder="请输入"
+                      icon={Lock}
+                      value={password}
+                      onChangeText={setPassword}
+                      secureTextEntry
+                      variant="outline"
+                    />
+                  </View>
+                )}
+              </View>
+            </CardContent>
+            <CardFooter>
+              {btloginfo.loggedIn && (
+                <Button
+                  onPress={() => {
+                    SecureStore.setItemAsync("bt_username", "");
+                    SecureStore.setItemAsync("bt_password", "");
+                    SecureStore.setItemAsync("bt_url", "");
+                    btloginfo.setLoggedIn(false);
+                  }}
+                  variant="destructive"
+                >
+                  登出
+                </Button>
+              )}
+              {loading && (
+                <Button
+                  onPress={() => {
+                    controller.abort();
+                  }}
+                  variant="outline"
+                >
+                  取消
+                </Button>
+              )}
+              {!btloginfo.loggedIn && (
+                <Button
+                  loading={loading}
+                  onPress={async () => {
+                    const result = await btLogin(
+                      logUrl,
+                      username,
+                      password,
+                      controller
+                    );
+                    result && btloginfo.setLoggedIn(true);
                   }}
                 >
-                  {feature.title}
-                </Text>
-                <Text variant="caption">{feature.description}</Text>
-              </View>
-            </Card>
-          ))}
+                  登录
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
+          {/* 键盘规避with animate */}
+          <AvoidKeyboard />
         </View>
-        <Button
-          onPress={() => {
-            SecureStore.setItemAsync("bt_username", "");
-            SecureStore.setItemAsync("bt_password", "");
-            SecureStore.setItemAsync("bt_url", "");
-          }}
-          variant="destructive"
-          style={{ marginTop: 12 }}
-        >
-          QB清空用户信息
-        </Button>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const features = [
-  {
-    title: "QBittorrent管理",
-    description: "设置和管理您的QBittorrent下载任务",
-    icon: Eye,
-  },
-  {
-    title: "持续开发中",
-    description: "请稍后期待更多功能",
-    icon: Code,
-  },
-];

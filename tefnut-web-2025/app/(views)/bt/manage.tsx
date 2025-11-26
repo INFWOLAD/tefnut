@@ -8,7 +8,6 @@ import { useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { useActionSheet } from "@/components/ui/action-sheet";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
 import {
   Plus,
@@ -25,7 +24,6 @@ import { useEffect, useState, useRef } from "react";
 import { Pressable } from "react-native";
 import { request } from "@/utils/request";
 import * as SecureStore from "expo-secure-store";
-import { router } from "expo-router";
 
 const stateMap: { [key: string]: string } = {
   error: "错误",
@@ -48,14 +46,11 @@ export default function BtManageScreen() {
   const { toast } = useToast();
   const navigation = useNavigation();
   const magnetBottomSheet = useBottomSheet();
-  const actionSheet = useActionSheet();
 
   // 磁力链接输入内容
   const [magnet, setMagnet] = useState("");
   // 任务列表
   const [torrents, setTorrents] = useState<Array<any>>([]);
-  // 刷新用rid
-  const [rid, setRid] = useState<number>(0);
   // 种子列表加载状态
   const [listLoading, setListLoading] = useState(true);
   // 种子添加加载状态
@@ -72,19 +67,6 @@ export default function BtManageScreen() {
   useEffect(() => {
     (async () => {
       btUrl.current = await SecureStore.getItemAsync("bt_url");
-      try {
-        const response = await request({
-          url: `${btUrl.current}/api/v2/app/version`,
-          method: "POST",
-          toast,
-          silence: true,
-        });
-        console.log(`登录成功，qb版本：${response}`);
-      } catch (err) {
-        router.replace("/bt/login");
-        return;
-      }
-
       navigation.setOptions({
         title: "",
         headerRight: () => (
@@ -182,13 +164,6 @@ export default function BtManageScreen() {
         method: "POST",
         toast,
       });
-      //用于调试非全量情况
-      // !response.full_update &&
-      //   console.log("Partial update received:", response);
-      // 返回为list
-      // console.log("Fetched torrents:", response);
-      // setTorrents(response.torrents ? Object.values(response.torrents) : []);
-      // setRid(response.rid);
       setTorrents(response);
     } catch (error) {
       console.log("Error fetching torrents:", error);

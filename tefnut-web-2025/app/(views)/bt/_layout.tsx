@@ -5,7 +5,7 @@ import { useColor } from "@/hooks/useColor";
 import { Text } from "@/components/ui/text";
 import { Icon } from "@/components/ui/icon";
 import { Pressable } from "react-native";
-import { Home, LogIn } from "lucide-react-native";
+import { Home } from "lucide-react-native";
 import { ToastProvider } from "@/components/ui/toast";
 
 export default function BtLayout() {
@@ -34,31 +34,6 @@ export default function BtLayout() {
           },
         }}
       >
-        <Stack.Screen
-          name="login"
-          options={{
-            title: "",
-            headerTitle: () =>
-              Platform.OS === "android" ? (
-                <Text variant="heading">登录</Text>
-              ) : undefined,
-            headerLeft: () => (
-              <Pressable
-                onPress={() => {
-                  router.dismissAll();
-                  router.replace("/");
-                }}
-                style={{
-                  padding: 6,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <Icon name={Home} size={24} color={primary} />
-              </Pressable>
-            ),
-          }}
-        />
         <Stack.Screen
           name="manage"
           options={{
