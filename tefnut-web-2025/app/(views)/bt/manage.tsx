@@ -26,6 +26,7 @@ import { Pressable } from "react-native";
 import { request } from "@/utils/request";
 import * as SecureStore from "expo-secure-store";
 import { useStore as useBtStore } from "@/stores/bt/btInfo";
+import { showSuccessAlert } from "@/components/ui/alert";
 
 const stateMap: { [key: string]: string } = {
   error: "错误",
@@ -137,6 +138,7 @@ export default function BtManageScreen() {
     console.log(`调用下载${btStore.browserUrl}`);
     btStore.browserUrl && handleSubmit(btStore.browserUrl, true);
     return () => {
+      console.log("清空浏览器捕获的磁力");
       btStore.setBrowserUrl("");
     };
   }, [btStore.browserUrl]);
@@ -146,6 +148,10 @@ export default function BtManageScreen() {
     setAdding(true);
     const clipboardContent = await Clipboard.getStringAsync();
     console.log("Clipboard content:", clipboardContent);
+    if (!clipboardContent.startsWith("magnet:")) {
+      showSuccessAlert("提示", "剪贴板中非磁力连接", () => setAdding(false));
+      return;
+    }
     handleSubmit(clipboardContent);
     setAdding(false);
   }

@@ -191,8 +191,8 @@ export default function SettingsScreen() {
               <Text>webView</Text>
               <TextInput
                 value={btStore.defaultUrl}
-                onChangeText={btStore.setBrowserUrl}
-                keyboardType="name-phone-pad"
+                onChangeText={btStore.setDefaultUrl}
+                keyboardType="url"
                 style={{
                   color: themeColor,
                   fontSize: 16,
