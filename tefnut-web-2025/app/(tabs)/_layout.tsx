@@ -48,10 +48,9 @@ export default function TabsLayout() {
           ),
         })}
         <Label>设置</Label>
-        <Badge>1</Badge>
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger
+      {/* <NativeTabs.Trigger
         name="search"
         role={isLiquidGlassAvailable() ? "search" : undefined}
       >
@@ -62,7 +61,7 @@ export default function TabsLayout() {
           ),
         })}
         <Label>Search</Label>
-      </NativeTabs.Trigger>
+      </NativeTabs.Trigger> */}
     </NativeTabs>
   );
 }

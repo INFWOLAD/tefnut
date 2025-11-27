@@ -8,15 +8,15 @@ import { useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { useActionSheet } from "@/components/ui/action-sheet";
+import { Link } from "@/components/ui/link";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
 import {
   Plus,
   ClipboardPaste,
-  RefreshCcw,
   Pause,
   Trash2,
   Play,
+  Compass,
 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "expo-router";
@@ -25,7 +25,8 @@ import { useEffect, useState, useRef } from "react";
 import { Pressable } from "react-native";
 import { request } from "@/utils/request";
 import * as SecureStore from "expo-secure-store";
-import { router } from "expo-router";
+import { useStore as useBtStore } from "@/stores/bt/btInfo";
+import { showSuccessAlert } from "@/components/ui/alert";
 
 const stateMap: { [key: string]: string } = {
   error: "错误",
@@ -46,16 +47,11 @@ const stateMap: { [key: string]: string } = {
 
 export default function BtManageScreen() {
   const { toast } = useToast();
+  const btStore = useBtStore();
   const navigation = useNavigation();
   const magnetBottomSheet = useBottomSheet();
-  const actionSheet = useActionSheet();
-
   // 磁力链接输入内容
   const [magnet, setMagnet] = useState("");
-  // 任务列表
-  const [torrents, setTorrents] = useState<Array<any>>([]);
-  // 刷新用rid
-  const [rid, setRid] = useState<number>(0);
   // 种子列表加载状态
   const [listLoading, setListLoading] = useState(true);
   // 种子添加加载状态
@@ -72,37 +68,26 @@ export default function BtManageScreen() {
   useEffect(() => {
     (async () => {
       btUrl.current = await SecureStore.getItemAsync("bt_url");
-      try {
-        const response = await request({
-          url: `${btUrl.current}/api/v2/app/version`,
-          method: "POST",
-          toast,
-          silence: true,
-        });
-        console.log(`登录成功，qb版本：${response}`);
-      } catch (err) {
-        router.replace("/bt/login");
-        return;
-      }
-
+      // 立刻执行一次，随后计时器启动
+      await fetchTorrents(true);
       navigation.setOptions({
         title: "",
         headerRight: () => (
           <>
             {/* 手动刷新 */}
-            <Pressable
-              onPress={() => {
-                fetchTorrents();
-              }}
+            <Link
+              href="/bt/btSheet"
               style={{
                 padding: 6,
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: 20,
+                marginLeft: 8,
               }}
+              asChild
             >
-              <Icon name={RefreshCcw} size={24} />
-            </Pressable>
+              <Icon name={Compass} size={24} />
+            </Link>
             {/* 直接读取剪贴板添加 */}
             <Pressable
               onPress={() => {
@@ -148,11 +133,25 @@ export default function BtManageScreen() {
     })();
   }, []);
 
+  // 全局磁力，变化即添加,静默
+  useEffect(() => {
+    console.log(`调用下载${btStore.browserUrl}`);
+    btStore.browserUrl && handleSubmit(btStore.browserUrl, true);
+    return () => {
+      console.log("清空浏览器捕获的磁力");
+      btStore.setBrowserUrl("");
+    };
+  }, [btStore.browserUrl]);
+
   // 快速剪贴板添加
   async function handleClipboardAdd() {
     setAdding(true);
     const clipboardContent = await Clipboard.getStringAsync();
     console.log("Clipboard content:", clipboardContent);
+    if (!clipboardContent.startsWith("magnet:")) {
+      showSuccessAlert("提示", "剪贴板中非磁力连接", () => setAdding(false));
+      return;
+    }
     handleSubmit(clipboardContent);
     setAdding(false);
   }
@@ -182,14 +181,7 @@ export default function BtManageScreen() {
         method: "POST",
         toast,
       });
-      //用于调试非全量情况
-      // !response.full_update &&
-      //   console.log("Partial update received:", response);
-      // 返回为list
-      // console.log("Fetched torrents:", response);
-      // setTorrents(response.torrents ? Object.values(response.torrents) : []);
-      // setRid(response.rid);
-      setTorrents(response);
+      btStore.setTorrentsList(response);
     } catch (error) {
       console.log("Error fetching torrents:", error);
       return false;
@@ -202,7 +194,10 @@ export default function BtManageScreen() {
   }
 
   // 添加磁力
-  async function handleSubmit(Magnet: string = magnet) {
+  async function handleSubmit(
+    Magnet: string = magnet,
+    slience: boolean = false
+  ) {
     // 处理提交逻辑
     const formData = new FormData();
     formData.append("urls", Magnet);
@@ -217,6 +212,8 @@ export default function BtManageScreen() {
     console.log("Add torrent response:", response);
     // 清空输入框
     setMagnet("");
+    // 静默则直接返回
+    if (slience) return;
     if (response && response.includes("Ok.")) {
       toast({
         title: "成功",
@@ -278,7 +275,7 @@ export default function BtManageScreen() {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1 }}>
         {listLoading && (
           <View
             style={{
@@ -295,13 +292,13 @@ export default function BtManageScreen() {
           <ScrollView
             style={{
               flex: 1,
-              padding: 24,
-              paddingTop: 100,
+              padding: 12,
+              paddingTop: 70,
             }}
           >
             <View style={{ gap: 16 }}>
-              {torrents.length === 0 && <Text>无任务</Text>}
-              {torrents.map((torrent, index) => (
+              {btStore.torrentsList.length === 0 && <Text>无任务</Text>}
+              {btStore.torrentsList.map((torrent, index) => (
                 <Card key={index}>
                   <CardContent>
                     <Text style={{ marginBottom: 8, fontWeight: "600" }}>
