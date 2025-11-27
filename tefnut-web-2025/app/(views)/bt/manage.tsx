@@ -137,6 +137,9 @@ export default function BtManageScreen() {
   useEffect(() => {
     console.log(`调用下载${btStore.browserUrl}`);
     btStore.browserUrl && handleSubmit(btStore.browserUrl, true);
+    return () => {
+      btStore.setBrowserUrl("");
+    };
   }, [btStore.browserUrl]);
 
   // 快速剪贴板添加

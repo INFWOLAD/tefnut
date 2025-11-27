@@ -87,7 +87,7 @@ export default function SettingsScreen() {
                 }}
               >
                 <Text>
-                  {loading ? "登陆中" : btloginfo.loggedIn ? "在线" : "离线"}
+                  {loading ? "登录中" : btloginfo.loggedIn ? "在线" : "离线"}
                 </Text>
                 <Badge
                   variant={
