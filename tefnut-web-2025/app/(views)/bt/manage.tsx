@@ -8,14 +8,15 @@ import { useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "@/components/ui/link";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
 import {
   Plus,
   ClipboardPaste,
-  RefreshCcw,
   Pause,
   Trash2,
   Play,
+  Compass,
 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "expo-router";
@@ -24,6 +25,7 @@ import { useEffect, useState, useRef } from "react";
 import { Pressable } from "react-native";
 import { request } from "@/utils/request";
 import * as SecureStore from "expo-secure-store";
+import { useStore as useBtStore } from "@/stores/bt/btInfo";
 
 const stateMap: { [key: string]: string } = {
   error: "错误",
@@ -44,6 +46,7 @@ const stateMap: { [key: string]: string } = {
 
 export default function BtManageScreen() {
   const { toast } = useToast();
+  const btStore = useBtStore();
   const navigation = useNavigation();
   const magnetBottomSheet = useBottomSheet();
 
@@ -72,19 +75,19 @@ export default function BtManageScreen() {
         headerRight: () => (
           <>
             {/* 手动刷新 */}
-            <Pressable
-              onPress={() => {
-                fetchTorrents();
-              }}
+            <Link
+              href="/bt/btSheet"
               style={{
                 padding: 6,
                 justifyContent: "center",
                 alignItems: "center",
                 marginRight: 20,
+                marginLeft: 8,
               }}
+              asChild
             >
-              <Icon name={RefreshCcw} size={24} />
-            </Pressable>
+              <Icon name={Compass} size={24} />
+            </Link>
             {/* 直接读取剪贴板添加 */}
             <Pressable
               onPress={() => {
@@ -129,6 +132,12 @@ export default function BtManageScreen() {
       };
     })();
   }, []);
+
+  // 全局磁力，变化即添加,静默
+  useEffect(() => {
+    console.log(`调用下载${btStore.browserUrl}`);
+    btStore.browserUrl && handleSubmit(btStore.browserUrl, true);
+  }, [btStore.browserUrl]);
 
   // 快速剪贴板添加
   async function handleClipboardAdd() {
@@ -177,7 +186,10 @@ export default function BtManageScreen() {
   }
 
   // 添加磁力
-  async function handleSubmit(Magnet: string = magnet) {
+  async function handleSubmit(
+    Magnet: string = magnet,
+    slience: boolean = false
+  ) {
     // 处理提交逻辑
     const formData = new FormData();
     formData.append("urls", Magnet);
@@ -192,6 +204,8 @@ export default function BtManageScreen() {
     console.log("Add torrent response:", response);
     // 清空输入框
     setMagnet("");
+    // 静默则直接返回
+    if (slience) return;
     if (response && response.includes("Ok.")) {
       toast({
         title: "成功",

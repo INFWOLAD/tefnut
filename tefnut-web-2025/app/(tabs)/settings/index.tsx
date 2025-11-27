@@ -16,7 +16,7 @@ import { AvoidKeyboard } from "@/components/ui/avoid-keyboard";
 import { Lock, User, Link } from "lucide-react-native";
 import * as SecureStore from "expo-secure-store";
 import { useEffect, useState } from "react";
-import { useStore as useBtStore } from "@/stores/bt/loginfo";
+import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBtLogin } from "@/hooks/useBtLogin";
 import { createRequestController } from "@/utils/request";

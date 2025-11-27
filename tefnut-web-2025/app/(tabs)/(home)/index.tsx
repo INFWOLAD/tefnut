@@ -3,7 +3,7 @@ import { Text } from "@/components/ui/text";
 import { View } from "@/components/ui/view";
 import { useColor } from "@/hooks/useColor";
 import { useRouter } from "expo-router";
-import { useStore as useBtStore } from "@/stores/bt/loginfo";
+import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { showSuccessAlert } from "@/components/ui/alert";
 
 export default function HomeScreen() {
