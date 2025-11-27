@@ -1,5 +1,4 @@
 import { ScrollView } from "./ui/scroll-view";
-import { Text } from "./ui/text";
 import { Input } from "@/components/ui/input";
 import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { WebView } from "react-native-webview";
@@ -8,11 +7,18 @@ import { useState } from "react";
 import { View } from "./ui/view";
 import { showSuccessAlert } from "@/components/ui/alert";
 
-export default function browserSheet(catchMagnet = false) {
-  const btStore = useBtStore();
+interface BrowserSheetProps {
+  catchMagnet: boolean; // 抓取磁力推送到btStore
+  defaultUrl: string; // 浏览器默认打开地址
+}
 
-  const [url, setUrl] = useState("https://www.bing.com");
-  const [browserUrl, setBrowserUrl] = useState("https://www.bing.com");
+export function BrowserSheet({
+  catchMagnet = false,
+  defaultUrl = "https://www.bing.com",
+}) {
+  const btStore = useBtStore();
+  const [url, setUrl] = useState(defaultUrl);
+  const [browserUrl, setBrowserUrl] = useState(defaultUrl);
 
   // input框回车后，浏览器url被更新，将浏览器url和输入框url解耦
   function handleUrl() {

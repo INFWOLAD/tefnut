@@ -12,6 +12,7 @@ import { View } from "@/components/ui/view";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { AvoidKeyboard } from "@/components/ui/avoid-keyboard";
 import { Lock, User, Link } from "lucide-react-native";
 import * as SecureStore from "expo-secure-store";
@@ -20,18 +21,26 @@ import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBtLogin } from "@/hooks/useBtLogin";
 import { createRequestController } from "@/utils/request";
+import { TextInput } from "react-native";
+import { useColor } from "@/hooks/useColor";
+import { useStore } from "@/stores/bt/btInfo";
 
 export default function SettingsScreen() {
   // 登录hook
   const { btLogin, loading } = useBtLogin();
+  // bt zustand
+  const btStore = useStore();
   // 登录信息三要素
   const [logUrl, setLogUrl] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   // bt zustand
   const btloginfo = useBtStore();
+  // textinput组件用颜色
+  const themeColor = useColor("text");
+  const disableColor = useColor("textMuted");
   // 请求中断
-  const controller = createRequestController();
+  const [controller, setController] = useState(createRequestController());
 
   useEffect(() => {
     // 尝试从安全存储中获取已保存的凭据
@@ -43,7 +52,10 @@ export default function SettingsScreen() {
       if (un && pw && url) {
         setLogUrl(url);
         setUsername(un);
-        const result = await btLogin(url, un, pw, controller, true);
+        // 请求前重新生成controller防止全局失效
+        const localController = createRequestController();
+        setController(localController);
+        const result = await btLogin(url, un, pw, localController, true);
         result && btloginfo.setLoggedIn(true);
       }
     })();
@@ -54,20 +66,26 @@ export default function SettingsScreen() {
       <ScrollView
         style={{
           flex: 1,
-          padding: 24,
+          paddingTop: 24,
+          paddingHorizontal: 8,
         }}
       >
         <View style={{ gap: 4, marginTop: 8 }}>
           <Card>
-            <CardHeader
+            <View
               style={{
-                marginHorizontal: 6,
                 flexDirection: "row",
                 justifyContent: "space-between",
+                margin: 4,
               }}
             >
-              <CardTitle>Bt下载</CardTitle>
-              <CardDescription>
+              <Text>登录状态</Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
                 <Text>
                   {loading ? "登陆中" : btloginfo.loggedIn ? "在线" : "离线"}
                 </Text>
@@ -89,50 +107,102 @@ export default function SettingsScreen() {
                 >
                   <View />
                 </Badge>
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <View style={{ gap: 16 }}>
-                <View>
-                  <Input
-                    label="QB地址"
-                    placeholder="http://xxx:xxx"
-                    icon={Link}
-                    value={logUrl}
-                    onChangeText={setLogUrl}
-                    keyboardType="web-search"
-                    variant={btloginfo.loggedIn ? "filled" : "outline"}
-                    disabled={btloginfo.loggedIn}
-                  />
-                </View>
-                <View>
-                  <Input
-                    label="用户名"
-                    placeholder="qbittorrent用户名"
-                    icon={User}
-                    value={username}
-                    onChangeText={setUsername}
-                    variant={btloginfo.loggedIn ? "filled" : "outline"}
-                    disabled={btloginfo.loggedIn}
-                  />
-                </View>
-                {/* 登录状态下不展示密码 */}
-                {!btloginfo.loggedIn && (
-                  <View>
-                    <Input
-                      label="密码"
-                      placeholder="请输入"
-                      icon={Lock}
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry
-                      variant="outline"
-                    />
-                  </View>
-                )}
               </View>
-            </CardContent>
-            <CardFooter>
+            </View>
+            <Separator style={{ marginVertical: 8 }} />
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                margin: 4,
+              }}
+            >
+              <Text>登录地址</Text>
+              <TextInput
+                value={logUrl}
+                onChangeText={setLogUrl}
+                keyboardType="url"
+                editable={!btloginfo.loggedIn}
+                style={{
+                  color: btloginfo.loggedIn ? disableColor : themeColor,
+                  fontSize: 16,
+                  flex: 1,
+                  textAlign: "right",
+                }}
+              ></TextInput>
+            </View>
+            <Separator style={{ marginVertical: 8 }} />
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                margin: 4,
+              }}
+            >
+              <Text>用户名</Text>
+              <TextInput
+                value={username}
+                onChangeText={setUsername}
+                keyboardType="name-phone-pad"
+                editable={!btloginfo.loggedIn}
+                style={{
+                  color: btloginfo.loggedIn ? disableColor : themeColor,
+                  fontSize: 16,
+                  flex: 1,
+                  textAlign: "right",
+                }}
+              ></TextInput>
+            </View>
+            {!btloginfo.loggedIn && (
+              <>
+                <Separator style={{ marginVertical: 8 }} />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    margin: 4,
+                  }}
+                >
+                  <Text>密码</Text>
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    keyboardType="visible-password"
+                    editable={!btloginfo.loggedIn}
+                    style={{
+                      color: themeColor,
+                      fontSize: 16,
+                      flex: 1,
+                      textAlign: "right",
+                    }}
+                  ></TextInput>
+                </View>
+              </>
+            )}
+            <Separator style={{ marginVertical: 8 }} />
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                margin: 4,
+              }}
+            >
+              <Text>webView</Text>
+              <TextInput
+                value={btStore.defaultUrl}
+                onChangeText={btStore.setBrowserUrl}
+                keyboardType="name-phone-pad"
+                style={{
+                  color: themeColor,
+                  fontSize: 16,
+                  flex: 1,
+                  textAlign: "right",
+                }}
+              ></TextInput>
+            </View>
+            <Separator style={{ marginVertical: 8 }} />
+            <View style={{ flexDirection: "row" }}>
               {btloginfo.loggedIn && !loading && (
                 <Button
                   onPress={() => {
@@ -153,6 +223,7 @@ export default function SettingsScreen() {
                     controller.abort();
                   }}
                   variant="outline"
+                  style={{ flex: 1 }}
                 >
                   取消
                 </Button>
@@ -161,19 +232,22 @@ export default function SettingsScreen() {
                 <Button
                   loading={loading}
                   onPress={async () => {
+                    const localController = createRequestController();
+                    setController(localController);
                     const result = await btLogin(
                       logUrl,
                       username,
                       password,
-                      controller
+                      localController
                     );
                     result && btloginfo.setLoggedIn(true);
                   }}
+                  style={{ flex: 1 }}
                 >
                   登录
                 </Button>
               )}
-            </CardFooter>
+            </View>
           </Card>
           {/* 键盘规避with animate */}
           <AvoidKeyboard />
