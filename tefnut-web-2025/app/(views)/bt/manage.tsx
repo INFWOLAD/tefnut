@@ -49,11 +49,8 @@ export default function BtManageScreen() {
   const btStore = useBtStore();
   const navigation = useNavigation();
   const magnetBottomSheet = useBottomSheet();
-
   // 磁力链接输入内容
   const [magnet, setMagnet] = useState("");
-  // 任务列表
-  const [torrents, setTorrents] = useState<Array<any>>([]);
   // 种子列表加载状态
   const [listLoading, setListLoading] = useState(true);
   // 种子添加加载状态
@@ -70,6 +67,8 @@ export default function BtManageScreen() {
   useEffect(() => {
     (async () => {
       btUrl.current = await SecureStore.getItemAsync("bt_url");
+      // 立刻执行一次，随后计时器启动
+      await fetchTorrents(true);
       navigation.setOptions({
         title: "",
         headerRight: () => (
@@ -176,7 +175,7 @@ export default function BtManageScreen() {
         method: "POST",
         toast,
       });
-      setTorrents(response);
+      btStore.setTorrentsList(response);
     } catch (error) {
       console.log("Error fetching torrents:", error);
       return false;
@@ -270,7 +269,7 @@ export default function BtManageScreen() {
 
   return (
     <>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1 }}>
         {listLoading && (
           <View
             style={{
@@ -287,13 +286,13 @@ export default function BtManageScreen() {
           <ScrollView
             style={{
               flex: 1,
-              padding: 24,
-              paddingTop: 100,
+              padding: 12,
+              paddingTop: 70,
             }}
           >
             <View style={{ gap: 16 }}>
-              {torrents.length === 0 && <Text>无任务</Text>}
-              {torrents.map((torrent, index) => (
+              {btStore.torrentsList.length === 0 && <Text>无任务</Text>}
+              {btStore.torrentsList.map((torrent, index) => (
                 <Card key={index}>
                   <CardContent>
                     <Text style={{ marginBottom: 8, fontWeight: "600" }}>
