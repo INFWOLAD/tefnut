@@ -31,7 +31,7 @@ export default function TabsLayout() {
       <NativeTabs.Trigger name="(home)">
         {Platform.select({
           ios: <Icon sf="house.fill" />,
-          android: <Icon src={require("@/assets/icons/house.png")} />,
+          android: <Icon src={require("../../assets/icons/house.png")} />,
         })}
         <Label>首页</Label>
       </NativeTabs.Trigger>
@@ -39,7 +39,7 @@ export default function TabsLayout() {
       <NativeTabs.Trigger name="settings">
         {Platform.select({
           ios: <Icon sf="gear" />,
-          android: <Icon src={require("@/assets/icons/cog.png")} />,
+          android: <Icon src={require("../../assets/icons/cog.png")} />,
         })}
         <Label>设置</Label>
       </NativeTabs.Trigger>
