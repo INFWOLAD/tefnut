@@ -7,6 +7,7 @@ import { useState } from "react";
 import { View } from "./ui/view";
 import { showSuccessAlert } from "@/components/ui/alert";
 
+import { SafeAreaView } from "react-native-safe-area-context";
 interface BrowserSheetProps {
   catchMagnet: boolean; // 抓取磁力推送到btStore
   defaultUrl: string; // 浏览器默认打开地址
@@ -34,12 +35,8 @@ export function BrowserSheet({
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      overScrollMode="never"
-      contentContainerStyle={{ flex: 1, paddingTop: 10 }}
-    >
-      <View style={{ padding: 10 }}>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ padding: 10, flexDirection: "row", alignItems: "center" }}>
         <Input
           placeholder="url"
           icon={Link}
@@ -74,6 +71,6 @@ export function BrowserSheet({
           });
         `}
       />
-    </ScrollView>
+    </SafeAreaView>
   );
 }

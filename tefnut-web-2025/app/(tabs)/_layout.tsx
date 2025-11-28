@@ -1,19 +1,13 @@
 import { Platform } from "react-native";
 import { useColor } from "@/hooks/useColor";
-import { isLiquidGlassAvailable } from "expo-glass-effect";
-import MaterialIcons from "@expo/vector-icons/Feather";
-import {
-  Badge,
-  Icon,
-  Label,
-  NativeTabs,
-  VectorIcon,
-} from "expo-router/unstable-native-tabs";
+import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 
 export default function TabsLayout() {
   const red = useColor("red");
   const primary = useColor("primary");
+  const tabBackground = useColor("background");
   const foreground = useColor("foreground");
+  const selected = useColor("card");
 
   return (
     <NativeTabs
@@ -27,15 +21,17 @@ export default function TabsLayout() {
         selected: foreground,
       }}
       badgeBackgroundColor={red}
-      labelVisibilityMode="labeled"
+      backgroundColor={Platform.select({
+        android: tabBackground,
+      })}
+      indicatorColor={selected}
+      labelVisibilityMode="selected"
       disableTransparentOnScrollEdge={true}
     >
       <NativeTabs.Trigger name="(home)">
         {Platform.select({
           ios: <Icon sf="house.fill" />,
-          android: (
-            <Icon src={<VectorIcon family={MaterialIcons} name="home" />} />
-          ),
+          android: <Icon src={require("@/assets/icons/house.png")} />,
         })}
         <Label>首页</Label>
       </NativeTabs.Trigger>
@@ -43,9 +39,7 @@ export default function TabsLayout() {
       <NativeTabs.Trigger name="settings">
         {Platform.select({
           ios: <Icon sf="gear" />,
-          android: (
-            <Icon src={<VectorIcon family={MaterialIcons} name="settings" />} />
-          ),
+          android: <Icon src={require("@/assets/icons/cog.png")} />,
         })}
         <Label>设置</Label>
       </NativeTabs.Trigger>

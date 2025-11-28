@@ -19,6 +19,7 @@
         "backgroundImage": "./assets/images/splash.png",
         "monochromeImage": "./assets/images/splash.png"
       },
+      "icon": "./assets/images/icon.png",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": true,
       "package": "com.cosz.tefnut"
@@ -46,6 +47,10 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "cover"
     },
     "extra": {
       "router": {},

@@ -77,6 +77,7 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 margin: 4,
+                height: 22,
               }}
             >
               <Text>登录状态</Text>
@@ -115,6 +116,8 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 margin: 4,
+                height: 22,
+                alignItems: "center",
               }}
             >
               <Text>登录地址</Text>
@@ -128,8 +131,9 @@ export default function SettingsScreen() {
                   fontSize: 16,
                   flex: 1,
                   textAlign: "right",
+                  padding: 0,
                 }}
-              ></TextInput>
+              />
             </View>
             <Separator style={{ marginVertical: 8 }} />
             <View
@@ -137,19 +141,21 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 margin: 4,
+                height: 22,
               }}
             >
               <Text>用户名</Text>
               <TextInput
                 value={username}
                 onChangeText={setUsername}
-                keyboardType="name-phone-pad"
+                keyboardType="email-address"
                 editable={!btloginfo.loggedIn}
                 style={{
                   color: btloginfo.loggedIn ? disableColor : themeColor,
                   fontSize: 16,
                   flex: 1,
                   textAlign: "right",
+                  padding: 0,
                 }}
               ></TextInput>
             </View>
@@ -167,14 +173,14 @@ export default function SettingsScreen() {
                   <TextInput
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry
-                    keyboardType="visible-password"
+                    secureTextEntry={true}
                     editable={!btloginfo.loggedIn}
                     style={{
                       color: themeColor,
                       fontSize: 16,
                       flex: 1,
                       textAlign: "right",
+                      padding: 0,
                     }}
                   ></TextInput>
                 </View>
@@ -188,7 +194,7 @@ export default function SettingsScreen() {
                 margin: 4,
               }}
             >
-              <Text>webView</Text>
+              <Text>主页地址</Text>
               <TextInput
                 value={btStore.defaultUrl}
                 onChangeText={btStore.setDefaultUrl}
@@ -198,6 +204,7 @@ export default function SettingsScreen() {
                   fontSize: 16,
                   flex: 1,
                   textAlign: "right",
+                  padding: 0,
                 }}
               ></TextInput>
             </View>

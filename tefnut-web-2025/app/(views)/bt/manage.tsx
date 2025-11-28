@@ -19,10 +19,10 @@ import {
   Compass,
 } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { useEffect, useState, useRef } from "react";
-import { Pressable } from "react-native";
+import { Pressable, Platform } from "react-native";
 import { request } from "@/utils/request";
 import * as SecureStore from "expo-secure-store";
 import { useStore as useBtStore } from "@/stores/bt/btInfo";
@@ -72,54 +72,80 @@ export default function BtManageScreen() {
       await fetchTorrents(true);
       navigation.setOptions({
         title: "",
-        headerRight: () => (
-          <>
-            {/* 手动刷新 */}
-            <Link
-              href="/bt/btSheet"
-              style={{
-                padding: 6,
-                justifyContent: "center",
-                alignItems: "center",
-                marginRight: 20,
-                marginLeft: 8,
-              }}
-              asChild
-            >
-              <Icon name={Compass} size={24} />
-            </Link>
-            {/* 直接读取剪贴板添加 */}
-            <Pressable
-              onPress={() => {
-                console.log("Add torrent via clipboard");
-                handleClipboardAdd();
-              }}
-              style={{
-                padding: 6,
-                justifyContent: "center",
-                alignItems: "center",
-                marginRight: 20,
-              }}
-            >
-              {adding && <Spinner />}
-              {!adding && <Icon name={ClipboardPaste} size={24} />}
-            </Pressable>
-            {/* 手动添加 */}
-            <Pressable
-              onPress={() => {
-                console.log("Add torrent button pressed");
-                magnetBottomSheet.open();
-              }}
-              style={{
-                padding: 6,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              <Icon name={Plus} size={24} />
-            </Pressable>
-          </>
-        ),
+        headerRight: () => {
+          return (
+            <>
+              {/* 浏览器页 */}
+              {Platform.OS === "android" ? (
+                <Pressable
+                  onPress={() => {
+                    router.push("/bt/btSheet");
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  android_ripple={{ color: "rgba(0,0,0,0.08)" }}
+                  style={{
+                    padding: 6,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: 20,
+                  }}
+                >
+                  <Icon name={Compass} size={24} />
+                </Pressable>
+              ) : (
+                <Link
+                  href="/bt/btSheet"
+                  style={{
+                    padding: 6,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: 20,
+                    marginLeft: 8,
+                  }}
+                  asChild
+                >
+                  <Icon name={Compass} size={24} />
+                </Link>
+              )}
+
+              {/* 直接读取剪贴板添加 */}
+              <Pressable
+                onPress={() => {
+                  handleClipboardAdd();
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                android_ripple={{ color: "rgba(0,0,0,0.08)" }}
+                style={{
+                  padding: 6,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 20,
+                }}
+              >
+                {adding && <Spinner />}
+                {!adding && <Icon name={ClipboardPaste} size={24} />}
+              </Pressable>
+              {/* 手动添加 */}
+              <Pressable
+                onPress={() => {
+                  magnetBottomSheet.open();
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                android_ripple={{ color: "rgba(0,0,0,0.08)" }}
+                style={{
+                  padding: 6,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Icon name={Plus} size={24} />
+              </Pressable>
+            </>
+          );
+        },
       });
       // 拉起页面加载计时器，页面销毁清除计时器
       startInterval();
@@ -293,7 +319,7 @@ export default function BtManageScreen() {
             style={{
               flex: 1,
               padding: 12,
-              paddingTop: 70,
+              paddingTop: Platform.OS === "android" ? 0 : 70,
             }}
           >
             <View style={{ gap: 16 }}>

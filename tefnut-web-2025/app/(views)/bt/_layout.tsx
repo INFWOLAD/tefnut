@@ -40,10 +40,9 @@ export default function BtLayout() {
           name="manage"
           options={{
             title: "",
-            headerTitle: () =>
-              Platform.OS === "android" ? (
-                <Text variant="heading">管理页</Text>
-              ) : undefined,
+            headerTitle: undefined,
+            // 安卓header透明时，会把 header 作为“覆盖层”渲染在内容之上
+            headerTransparent: Platform.OS === "ios" ? true : false,
             headerLeft: () => (
               <Pressable
                 onPress={() => {

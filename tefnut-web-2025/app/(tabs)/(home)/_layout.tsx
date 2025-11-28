@@ -32,10 +32,7 @@ export default function HomeLayout() {
         name="index"
         options={{
           title: "",
-          headerTitle: () =>
-            Platform.OS === "android" ? (
-              <Text variant="heading">首页</Text>
-            ) : undefined,
+          headerTitle: undefined,
         }}
       />
     </Stack>
