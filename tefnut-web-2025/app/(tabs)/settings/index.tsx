@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { View } from "@/components/ui/view";
-import { Input } from "@/components/ui/input";
+import * as Application from "expo-application";
 import { Text } from "@/components/ui/text";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -21,11 +21,14 @@ import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useBtLogin } from "@/hooks/useBtLogin";
 import { createRequestController } from "@/utils/request";
-import { TextInput } from "react-native";
+import { TextInput, Platform } from "react-native";
 import { useColor } from "@/hooks/useColor";
 import { useStore } from "@/stores/bt/btInfo";
 
 export default function SettingsScreen() {
+  const appVersion = Application.nativeApplicationVersion || "dev";
+  const buildNumber = Application.nativeBuildVersion;
+  ("0");
   // 登录hook
   const { btLogin, loading } = useBtLogin();
   // bt zustand
@@ -77,6 +80,7 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 margin: 4,
+                height: 22,
               }}
             >
               <Text>登录状态</Text>
@@ -115,6 +119,8 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 margin: 4,
+                height: 22,
+                alignItems: "center",
               }}
             >
               <Text>登录地址</Text>
@@ -128,8 +134,9 @@ export default function SettingsScreen() {
                   fontSize: 16,
                   flex: 1,
                   textAlign: "right",
+                  padding: 0,
                 }}
-              ></TextInput>
+              />
             </View>
             <Separator style={{ marginVertical: 8 }} />
             <View
@@ -137,19 +144,21 @@ export default function SettingsScreen() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 margin: 4,
+                height: 22,
               }}
             >
               <Text>用户名</Text>
               <TextInput
                 value={username}
                 onChangeText={setUsername}
-                keyboardType="name-phone-pad"
+                keyboardType="email-address"
                 editable={!btloginfo.loggedIn}
                 style={{
                   color: btloginfo.loggedIn ? disableColor : themeColor,
                   fontSize: 16,
                   flex: 1,
                   textAlign: "right",
+                  padding: 0,
                 }}
               ></TextInput>
             </View>
@@ -167,14 +176,14 @@ export default function SettingsScreen() {
                   <TextInput
                     value={password}
                     onChangeText={setPassword}
-                    secureTextEntry
-                    keyboardType="visible-password"
+                    secureTextEntry={true}
                     editable={!btloginfo.loggedIn}
                     style={{
                       color: themeColor,
                       fontSize: 16,
                       flex: 1,
                       textAlign: "right",
+                      padding: 0,
                     }}
                   ></TextInput>
                 </View>
@@ -188,7 +197,7 @@ export default function SettingsScreen() {
                 margin: 4,
               }}
             >
-              <Text>webView</Text>
+              <Text>主页地址</Text>
               <TextInput
                 value={btStore.defaultUrl}
                 onChangeText={btStore.setDefaultUrl}
@@ -198,6 +207,7 @@ export default function SettingsScreen() {
                   fontSize: 16,
                   flex: 1,
                   textAlign: "right",
+                  padding: 0,
                 }}
               ></TextInput>
             </View>
@@ -252,6 +262,16 @@ export default function SettingsScreen() {
           {/* 键盘规避with animate */}
           <AvoidKeyboard />
         </View>
+        <Text
+          style={{
+            color: themeColor,
+            opacity: 0.6,
+            textAlign: "center",
+            fontSize: 14,
+          }}
+        >
+          Tefnut {appVersion} ({buildNumber})
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );

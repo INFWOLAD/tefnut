@@ -22,7 +22,7 @@ export default function BtLayout() {
         screenOptions={{
           headerLargeTitle: false,
           headerLargeTitleShadowVisible: false,
-          headerTransparent: true,
+          headerTransparent: Platform.OS === "ios" ? true : false,
           headerTintColor: text,
           headerBlurEffect: isLiquidGlassAvailable()
             ? undefined
@@ -40,10 +40,7 @@ export default function BtLayout() {
           name="manage"
           options={{
             title: "",
-            headerTitle: () =>
-              Platform.OS === "android" ? (
-                <Text variant="heading">管理页</Text>
-              ) : undefined,
+            headerTitle: undefined,
             headerLeft: () => (
               <Pressable
                 onPress={() => {
@@ -73,7 +70,6 @@ export default function BtLayout() {
                   ? Colors.dark.card
                   : Colors.light.card,
             },
-            headerTransparent: Platform.OS === "ios" ? true : false,
             headerLargeTitle: false,
             title: "",
             presentation:
