@@ -36,7 +36,7 @@ export default function HomeScreen() {
         onPress={() => {
           console.log("Navigating to /bt/manage");
           btloginfo.loggedIn
-            ? router.navigate("/bt/manage")
+            ? router.push("/bt/manage")
             : showSuccessAlert(
                 "请确认登录状态",
                 "您可以在设置-BT设置中登入以使用该功能",

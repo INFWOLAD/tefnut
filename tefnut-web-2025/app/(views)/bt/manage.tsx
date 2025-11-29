@@ -228,10 +228,14 @@ export default function BtManageScreen() {
     const formData = new FormData();
     formData.append("urls", Magnet);
     magnetBottomSheet.close();
+    console.log("Submitting magnet link:", Magnet, formData, btUrl.current);
     // 从zustand中取login的url
     const response = await request({
       url: `${btUrl.current}/api/v2/torrents/add`,
       method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data;",
+      },
       data: formData,
       toast,
     });

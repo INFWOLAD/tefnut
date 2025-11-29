@@ -22,7 +22,7 @@ export default function BtLayout() {
         screenOptions={{
           headerLargeTitle: false,
           headerLargeTitleShadowVisible: false,
-          headerTransparent: true,
+          headerTransparent: Platform.OS === "ios" ? true : false,
           headerTintColor: text,
           headerBlurEffect: isLiquidGlassAvailable()
             ? undefined
@@ -41,8 +41,6 @@ export default function BtLayout() {
           options={{
             title: "",
             headerTitle: undefined,
-            // 安卓header透明时，会把 header 作为“覆盖层”渲染在内容之上
-            headerTransparent: Platform.OS === "ios" ? true : false,
             headerLeft: () => (
               <Pressable
                 onPress={() => {
@@ -72,7 +70,6 @@ export default function BtLayout() {
                   ? Colors.dark.card
                   : Colors.light.card,
             },
-            headerTransparent: Platform.OS === "ios" ? true : false,
             headerLargeTitle: false,
             title: "",
             presentation:

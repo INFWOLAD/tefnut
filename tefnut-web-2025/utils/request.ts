@@ -60,10 +60,12 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
   const signal = abortController.signal;
 
   try {
+    console.log("请求发出", rest);
     const res: AxiosResponse<T> = await instance({
       ...rest,
       signal,
     });
+    console.log("请求返回", res.data);
     // 自定义错误关键词和错误展示信息
     if (
       typeof res.data === "string" &&
