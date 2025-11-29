@@ -206,6 +206,7 @@ export default function BtManageScreen() {
         url: `${btUrl.current}/api/v2/torrents/info`,
         method: "POST",
         toast,
+        withOutLog: true,
       });
       btStore.setTorrentsList(response);
     } catch (error) {
@@ -271,7 +272,8 @@ export default function BtManageScreen() {
       | "destructive"
       | "outline"
       | "secondary"
-      | "ghost"
+      | "ghost",
+    moreExt?: string
   ) {
     return (
       <Button
@@ -286,7 +288,7 @@ export default function BtManageScreen() {
           try {
             const response = await request({
               url: url,
-              data: `hashes=${hash}`,
+              data: `hashes=${hash}${moreExt || ""}`,
               method: "POST",
               toast,
             });
@@ -384,7 +386,8 @@ export default function BtManageScreen() {
                           Trash2,
                           torrent.hash,
                           `${btUrl.current}/api/v2/torrents/delete`,
-                          "destructive"
+                          "destructive",
+                          "&deleteFiles=true"
                         )}
                       </View>
                     </View>

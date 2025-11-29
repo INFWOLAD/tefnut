@@ -1,7 +1,13 @@
 import { Platform } from "react-native";
 import { useColor } from "@/hooks/useColor";
-import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import {
+  Icon,
+  Label,
+  NativeTabs,
+  VectorIcon,
+} from "expo-router/unstable-native-tabs";
 
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 export default function TabsLayout() {
   const red = useColor("red");
   const primary = useColor("primary");
@@ -31,7 +37,11 @@ export default function TabsLayout() {
       <NativeTabs.Trigger name="(home)">
         {Platform.select({
           ios: <Icon sf="house.fill" />,
-          android: <Icon src={require("../../assets/icons/house.png")} />,
+          android: (
+            <Icon
+              src={<VectorIcon family={FontAwesome6} name="house-chimney" />}
+            />
+          ),
         })}
         <Label>首页</Label>
       </NativeTabs.Trigger>
@@ -39,7 +49,9 @@ export default function TabsLayout() {
       <NativeTabs.Trigger name="settings">
         {Platform.select({
           ios: <Icon sf="gear" />,
-          android: <Icon src={require("../../assets/icons/cog.png")} />,
+          android: (
+            <Icon src={<VectorIcon family={FontAwesome6} name="user-gear" />} />
+          ),
         })}
         <Label>设置</Label>
       </NativeTabs.Trigger>

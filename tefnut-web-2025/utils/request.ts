@@ -51,21 +51,33 @@ interface RequestOptions extends AxiosRequestConfig {
     keywords: string; // 错误关键词，用于http status无法判断错误信息时
     msg: string; // 检测到关键词时返回的错误信息
   };
+  withOutLog?: boolean; // 是否关闭请求日志
 }
 
 export async function request<T = any>(options: RequestOptions): Promise<T> {
-  const { silence = false, controller, toast, specialErr, ...rest } = options;
+  const {
+    silence = false,
+    controller,
+    toast,
+    specialErr,
+    withOutLog = false,
+    ...rest
+  } = options;
 
   const abortController = controller ?? new AbortController();
   const signal = abortController.signal;
 
   try {
-    console.log("请求发出", rest);
+    if (!withOutLog) {
+      console.log("请求发出", rest);
+    }
     const res: AxiosResponse<T> = await instance({
       ...rest,
       signal,
     });
-    console.log("请求返回", res.data);
+    if (!withOutLog) {
+      console.log("请求返回", res.data);
+    }
     // 自定义错误关键词和错误展示信息
     if (
       typeof res.data === "string" &&

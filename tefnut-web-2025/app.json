@@ -16,10 +16,14 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
-        "foregroundImage": "./assets/images/splashIcon.png"
+        "foregroundImage": "./assets/images/androidIcon.png"
       },
       "icon": "./assets/images/icon.png",
-      "package": "com.cosz.tefnut"
+      "package": "com.cosz.tefnut",
+      "splash": {
+        "image": "./assets/images/splashIcon.png",
+        "resizeMode": "contain"
+      }
     },
     "web": {
       "output": "static",
