@@ -19,13 +19,7 @@
         "foregroundImage": "./assets/images/splashIcon.png"
       },
       "icon": "./assets/images/icon.png",
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.cosz.tefnut",
-      "splash": {
-        "image": "./assets/images/splashIcon.png",
-        "resizeMode": "contain"
-      }
+      "package": "com.cosz.tefnut"
     },
     "web": {
       "output": "static",
@@ -43,6 +37,7 @@
             // "buildReactNativeFromSource":true,
             "enableBundleCompression": true,
             "enableMinifyInReleaseBuilds": true,
+            "enableOnBackInvokedCallback": false,
             "compileSdkVersion": 35,
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0",
@@ -57,10 +52,6 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "cover"
     },
     "extra": {
       "router": {},
