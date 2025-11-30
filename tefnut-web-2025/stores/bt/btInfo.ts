@@ -34,7 +34,7 @@ export const useStore = create<btInfo>((set) => ({
   torrentsList: [],
   selectedUuid: "",
   selectedUser: {},
-  listOrder: "time_active",
+  listOrder: "name",
   userList: [],
   totalDownloadSpeed: 0,
   totalUploadSpeed: 0,

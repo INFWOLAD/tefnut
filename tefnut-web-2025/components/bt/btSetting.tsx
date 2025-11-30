@@ -148,12 +148,12 @@ export default function BtSetting() {
       // 探活请求
       intervalRef.current = setInterval(async () => {
         try {
-          console.log("传入user", selectedUser);
+          // console.log("传入user", selectedUser);
           const result = await request({
             url: `${selectedUser.url}/api/v2/transfer/info`,
             method: "POST",
             toast: null,
-            // withOutLog: true,
+            withOutLog: true,
           });
           if (
             result.connection_status !== "connected" &&
@@ -292,7 +292,6 @@ export default function BtSetting() {
               value={localOrder}
               label="列表排序方式"
               onValueChange={setLocalOrder}
-              placeholder="Select setting..."
               variant="group"
               inputStyle={{ flex: 1, textAlign: "right" }}
               labelStyle={{ color: themeColor }}
