@@ -57,7 +57,7 @@ export default function BtSetting() {
   );
   // bt 选择框搜索和选中
   const [btSearch, setBtSearch] = useState<OptionType | null>(null);
-  const [localOrder, setLocalOrder] = useState<string>("time_active");
+  const [localOrder, setLocalOrder] = useState<string>("name");
   // bt 底部弹出框
   const btSheet = useBottomSheet();
   // bt zustand

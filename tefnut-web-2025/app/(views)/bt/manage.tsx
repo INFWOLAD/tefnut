@@ -54,6 +54,7 @@ export default function BtManageScreen() {
   const storeSelectedUser = useBtStore((state) => state.selectedUser);
   const storeTorrentsList = useBtStore((state) => state.torrentsList);
   const storeBrowserUrl = useBtStore((state) => state.browserUrl);
+  const storeListOrder = useBtStore((state) => state.listOrder);
   const storeTotalDownloadSpeed = useBtStore(
     (state) => state.totalDownloadSpeed
   );
@@ -79,11 +80,9 @@ export default function BtManageScreen() {
 
   // 计时器id，防止重复生成
   const intervalRef = useRef<number | null>(null);
-  const btUrl = useRef<string | null>("");
 
   useEffect(() => {
     (async () => {
-      btUrl.current = storeSelectedUser?.url || null;
       // 立刻执行一次，随后计时器启动
       await fetchTorrents(true);
       navigation.setOptions({
@@ -219,7 +218,7 @@ export default function BtManageScreen() {
     try {
       const response = await request({
         // url: `${btUrl.current}/api/v2/sync/maindata?rid=${rid}`,
-        url: `${btUrl.current}/api/v2/torrents/info`,
+        url: `${storeSelectedUser?.url}/api/v2/torrents/info?sort=${storeListOrder}`,
         method: "POST",
         toast,
         withOutLog: true,
@@ -245,10 +244,15 @@ export default function BtManageScreen() {
     const formData = new FormData();
     formData.append("urls", Magnet);
     magnetBottomSheet.close();
-    console.log("Submitting magnet link:", Magnet, formData, btUrl.current);
+    console.log(
+      "Submitting magnet link:",
+      Magnet,
+      formData,
+      storeSelectedUser?.url
+    );
     // 从zustand中取login的url
     const response = await request({
-      url: `${btUrl.current}/api/v2/torrents/add`,
+      url: `${storeSelectedUser?.url}/api/v2/torrents/add`,
       method: "POST",
       headers: {
         "Content-Type": "multipart/form-data;",
