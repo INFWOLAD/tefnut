@@ -1,24 +1,14 @@
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Text } from "@/components/ui/text";
 import { View } from "@/components/ui/view";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
-import {
-  Plus,
-  ClipboardPaste,
-  CloudDownload,
-  CloudUpload,
-  Compass,
-  UserRoundCheck,
-  ChartNetwork,
-} from "lucide-react-native";
+import { Plus, ClipboardPaste, Compass } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useNavigation } from "expo-router";
 import * as Clipboard from "expo-clipboard";
@@ -27,26 +17,10 @@ import { Pressable, Platform } from "react-native";
 import { request } from "@/utils/request";
 import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { showSuccessAlert } from "@/components/ui/alert";
-import { useColor } from "@/hooks/useColor";
-import { Badge } from "@/components/ui/badge";
 import { BtTorrentInfo } from "@/components/bt/btTorrentInfo";
-
-const stateMap: { [key: string]: string } = {
-  error: "错误",
-  pausedUP: "上传已暂停",
-  pausedDL: "下载已暂停",
-  queuedUP: "排队上传",
-  queuedDL: "排队下载",
-  checkingUP: "检查上传",
-  checkingDL: "检查下载",
-  downloading: "下载中",
-  stalledDL: "下载停滞",
-  checkingResumeData: "检查恢复数据",
-  moving: "移动中",
-  uploading: "上传中",
-  stalledUP: "上传停滞",
-  unknown: "未知状态",
-};
+import { BtEmptyList } from "@/components/bt/btEmptyList";
+import { BtDisplayCard } from "@/components/bt/btDisplayCard";
+import { BtToalInfoHud } from "@/components/bt/btTotalInfoHud";
 
 export default function BtManageScreen() {
   const { toast } = useToast();
@@ -55,10 +29,6 @@ export default function BtManageScreen() {
   const storeTorrentsList = useBtStore((state) => state.torrentsList);
   const storeBrowserUrl = useBtStore((state) => state.browserUrl);
   const storeListOrder = useBtStore((state) => state.listOrder);
-  const storeTotalDownloadSpeed = useBtStore(
-    (state) => state.totalDownloadSpeed
-  );
-  const storeTotalUploadSpeed = useBtStore((state) => state.totalUploadSpeed);
   const storeSetBrowserUrl = useBtStore((state) => state.setBrowserUrl);
   const storeSetTorrentsList = useBtStore((state) => state.setTorrentsList);
 
@@ -76,7 +46,6 @@ export default function BtManageScreen() {
   const [listLoading, setListLoading] = useState(true);
   // 种子添加加载状态
   const [adding, setAdding] = useState(false);
-  const themeColor = useColor("text");
 
   // 计时器id，防止重复生成
   const intervalRef = useRef<number | null>(null);
@@ -298,48 +267,17 @@ export default function BtManageScreen() {
         {!listLoading && (
           <>
             {/* 汇总信息hud */}
-            <View
-              style={{
-                justifyContent: "space-between",
-                flexDirection: "row",
-                paddingTop: Platform.OS === "android" ? 0 : 70,
-                paddingHorizontal: 14,
-              }}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Icon name={ChartNetwork} size={14} />
-                <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {storeTorrentsList.length}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Icon name={UserRoundCheck} size={14} />
-                <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {storeSelectedUser?.nickname || "未知"}
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Icon name={CloudDownload} size={14} />
-                <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {(storeTotalDownloadSpeed / 1024 / 1024).toFixed(2)} MB/s
-                </Text>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Icon name={CloudUpload} size={14} />
-                <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {(storeTotalUploadSpeed / 1024 / 1024).toFixed(2)} MB/s
-                </Text>
-              </View>
-            </View>
+            <BtToalInfoHud />
             {/* 种子列表 */}
             <ScrollView
               style={{
                 flex: 1,
                 padding: 12,
               }}
+              contentContainerStyle={{ flexGrow: 1 }} // 允许内容区域撑满高度
             >
-              <View style={{ gap: 16 }}>
-                {storeTorrentsList.length === 0 && <Text>无任务</Text>}
+              <View style={{ flex: 1, gap: 16 }}>
+                {storeTorrentsList.length === 0 && <BtEmptyList />}
                 {storeTorrentsList.map((torrent, index) => (
                   <Card key={index}>
                     <Pressable
@@ -348,71 +286,8 @@ export default function BtManageScreen() {
                         torrentInfoSheet.open();
                       }}
                     >
-                      <CardContent>
-                        <Text
-                          style={{ marginBottom: 8, fontWeight: "600" }}
-                          numberOfLines={1}
-                        >
-                          {torrent.name}
-                        </Text>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: 8,
-                          }}
-                        >
-                          <Text style={{ fontSize: 12, color: "#666" }}>
-                            剩余时间: {(torrent.eta / 60 / 60).toFixed(2)} hrs
-                          </Text>
-                          <Text style={{ fontSize: 12, color: "#666" }}>
-                            速度: {(torrent.dlspeed / 1024 / 1024).toFixed(2)}{" "}
-                            MB/s
-                          </Text>
-                          <Text style={{ fontSize: 12, color: "#666" }}>
-                            上传: {(torrent.upspeed / 1024 / 1024).toFixed(2)}{" "}
-                            MB/s
-                          </Text>
-                        </View>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                          }}
-                        >
-                          <Badge
-                            variant={
-                              torrent.state === "downloading"
-                                ? "success"
-                                : torrent.state === "pausedDL"
-                                  ? "default"
-                                  : "outline"
-                            }
-                            style={{
-                              height: 14,
-                              borderRadius: 8,
-                              paddingHorizontal: 4,
-                              paddingVertical: 0,
-                            }}
-                            textStyle={{ fontSize: 11 }}
-                          >
-                            {stateMap[torrent.state] || "未知状态"}
-                          </Badge>
-                          <Text
-                            variant="caption"
-                            style={{
-                              color: "#666",
-                              fontSize: 14,
-                              textAlign: "right",
-                            }}
-                          >
-                            {(torrent.progress * 100).toFixed(2)}%
-                          </Text>
-                        </View>
-                        <Progress value={torrent.progress * 100} height={5} />
-                      </CardContent>
+                      {/* 任务卡片 */}
+                      <BtDisplayCard torrent={torrent} />
                     </Pressable>
                   </Card>
                 ))}
