@@ -50,7 +50,17 @@ const stateMap: { [key: string]: string } = {
 
 export default function BtManageScreen() {
   const { toast } = useToast();
-  const btStore = useBtStore();
+  // bt zustand状态管理
+  const storeSelectedUser = useBtStore((state) => state.selectedUser);
+  const storeTorrentsList = useBtStore((state) => state.torrentsList);
+  const storeBrowserUrl = useBtStore((state) => state.browserUrl);
+  const storeTotalDownloadSpeed = useBtStore(
+    (state) => state.totalDownloadSpeed
+  );
+  const storeTotalUploadSpeed = useBtStore((state) => state.totalUploadSpeed);
+  const storeSetBrowserUrl = useBtStore((state) => state.setBrowserUrl);
+  const storeSetTorrentsList = useBtStore((state) => state.setTorrentsList);
+
   const navigation = useNavigation();
   // 添加磁力弹窗
   const magnetBottomSheet = useBottomSheet();
@@ -65,10 +75,6 @@ export default function BtManageScreen() {
   const [listLoading, setListLoading] = useState(true);
   // 种子添加加载状态
   const [adding, setAdding] = useState(false);
-  // 种子管理加载状态
-  const [manageLoading, setManageLoading] = useState<{
-    [key: string]: boolean;
-  }>({});
   const themeColor = useColor("text");
 
   // 计时器id，防止重复生成
@@ -77,7 +83,7 @@ export default function BtManageScreen() {
 
   useEffect(() => {
     (async () => {
-      btUrl.current = btStore.selectedUser?.url || null;
+      btUrl.current = storeSelectedUser?.url || null;
       // 立刻执行一次，随后计时器启动
       await fetchTorrents(true);
       navigation.setOptions({
@@ -171,13 +177,13 @@ export default function BtManageScreen() {
 
   // 全局磁力，变化即添加,静默
   useEffect(() => {
-    console.log(`调用下载${btStore.browserUrl}`);
-    btStore.browserUrl && handleSubmit(btStore.browserUrl, true);
+    console.log(`调用下载${storeBrowserUrl}`);
+    storeBrowserUrl && handleSubmit(storeBrowserUrl, true);
     return () => {
       console.log("清空浏览器捕获的磁力");
-      btStore.setBrowserUrl("");
+      storeSetBrowserUrl("");
     };
-  }, [btStore.browserUrl]);
+  }, [storeBrowserUrl]);
 
   // 快速剪贴板添加
   async function handleClipboardAdd() {
@@ -218,7 +224,7 @@ export default function BtManageScreen() {
         toast,
         withOutLog: true,
       });
-      btStore.setTorrentsList(response);
+      storeSetTorrentsList(response);
     } catch (error) {
       console.log("Error fetching torrents:", error);
       return false;
@@ -299,25 +305,25 @@ export default function BtManageScreen() {
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Icon name={ChartNetwork} size={14} />
                 <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {btStore.torrentsList.length}
+                  {storeTorrentsList.length}
                 </Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Icon name={UserRoundCheck} size={14} />
                 <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {btStore.selectedUser?.nickname || "未知"}
+                  {storeSelectedUser?.nickname || "未知"}
                 </Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Icon name={CloudDownload} size={14} />
                 <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {(btStore.totalDownloadSpeed / 1024 / 1024).toFixed(2)} MB/s
+                  {(storeTotalDownloadSpeed / 1024 / 1024).toFixed(2)} MB/s
                 </Text>
               </View>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <Icon name={CloudUpload} size={14} />
                 <Text style={{ fontSize: 14, color: themeColor, opacity: 0.8 }}>
-                  {(btStore.totalUploadSpeed / 1024 / 1024).toFixed(2)} MB/s
+                  {(storeTotalUploadSpeed / 1024 / 1024).toFixed(2)} MB/s
                 </Text>
               </View>
             </View>
@@ -329,8 +335,8 @@ export default function BtManageScreen() {
               }}
             >
               <View style={{ gap: 16 }}>
-                {btStore.torrentsList.length === 0 && <Text>无任务</Text>}
-                {btStore.torrentsList.map((torrent, index) => (
+                {storeTorrentsList.length === 0 && <Text>无任务</Text>}
+                {storeTorrentsList.map((torrent, index) => (
                   <Card key={index}>
                     <Pressable
                       onPress={() => {

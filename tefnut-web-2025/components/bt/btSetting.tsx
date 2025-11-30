@@ -41,7 +41,20 @@ export default function BtSetting() {
   // bt 登录hook
   const { btLogin, loading } = useBtLogin();
   // bt zustand
-  const btStore = useStore();
+  const storeUserList = useStore((state) => state.userList);
+  const storeSelectedUuid = useStore((state) => state.selectedUuid);
+  const storeDefaultUrl = useStore((state) => state.defaultUrl);
+  const storeSetUserList = useStore((state) => state.setUserList);
+  const storeSetSelectedUuid = useStore((state) => state.setSelectedUuid);
+  const storeSetDefaultUrl = useStore((state) => state.setDefaultUrl);
+  const storeSetListOrder = useStore((state) => state.setListOrder);
+  const storeSetSelectedUser = useStore((state) => state.setSelectedUser);
+  const storeSetTotalDownloadSpeed = useStore(
+    (state) => state.setTotalDownloadSpeed
+  );
+  const storeSetTotalUploadSpeed = useStore(
+    (state) => state.setTotalUploadSpeed
+  );
   // bt 选择框搜索和选中
   const [btSearch, setBtSearch] = useState<OptionType | null>(null);
   const [localOrder, setLocalOrder] = useState<string>("time_active");
@@ -65,48 +78,33 @@ export default function BtSetting() {
       //   以uuid存储当前选择用户
       const userDefaultUuid = await SecureStore.getItemAsync("bt_selectedUuid");
       const userList = userString ? JSON.parse(userString) : [];
-      btStore.setUserList(userList);
+      storeSetUserList(userList);
       if (userDefaultUuid) {
-        btStore.setSelectedUuid(userDefaultUuid);
-        const selectedUser = userList.find(
-          (u: any) => u.uuid === userDefaultUuid
-        );
-        btStore.setSelectedUser(selectedUser);
-
-        console.log("Loaded BT users from storage:", {
-          userList,
-          userDefaultUuid,
-        });
-        // 如果有默认用户则尝试自动登录
-        const un = selectedUser ? selectedUser.username : "";
-        const pw = selectedUser ? selectedUser.password : "";
-        const url = selectedUser ? selectedUser.url : "";
-        console.log("Retrieved credentials:", { un, pw, url });
-        if (un && pw && url) {
-          // 请求前重新生成controller防止全局失效
-          const localController = createRequestController();
-          const result = await btLogin(url, un, pw, localController, true);
-          result && btloginfo.setLoggedIn(true);
-        }
+        // uuid变化自动拉起登录
+        storeSetSelectedUuid(userDefaultUuid);
       }
     })();
-    // 拉起页面加载计时器，页面销毁清除计时器
-    startInterval();
-    // 卸载组件时执行清理
-    return () => {
-      if (intervalRef.current !== null) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
-    };
   }, []);
+
+  useEffect(() => {
+    // 根据搜索内容更新选中项
+    if (btSearch) {
+      // uuid变化自动拉起登录
+      storeSetSelectedUuid(btSearch.value);
+    }
+  }, [btSearch]);
+
+  useEffect(() => {
+    storeSetListOrder(localOrder as any);
+  }, [localOrder]);
+
+  // uuid变化执行登录
   useEffect(() => {
     (async () => {
-      // 根据搜索内容更新选中项
-      if (btSearch) {
-        console.log("Searching BT user:", btSearch);
-        const selected = btStore.userList.find(
-          (u: any) => u.uuid === btSearch.value
+      console.log("BT selected UUID changed:", storeSelectedUuid);
+      if (storeSelectedUuid) {
+        const selected = storeUserList.find(
+          (u: any) => u.uuid === storeSelectedUuid
         );
         // 如果找到了对应用户则尝试重新登录
         if (selected) {
@@ -121,61 +119,62 @@ export default function BtSetting() {
           // 登录成功放入缓存
           if (result) {
             btloginfo.setLoggedIn(true);
-            btStore.setSelectedUuid(selected.uuid);
-            btStore.setSelectedUser(selected);
+            storeSetSelectedUser(selected);
             await SecureStore.setItemAsync("bt_selectedUuid", selected.uuid);
           } else {
             btloginfo.setLoggedIn(false);
           }
           console.log("Selected BT user:", selected);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
+          startInterval(selected);
         }
       }
     })();
-  }, [btSearch]);
-
-  useEffect(() => {
-    btStore.setListOrder(localOrder as any);
-  }, [localOrder]);
-
-  useEffect(() => {
-    console.log("BT selected UUID changed:", btStore.selectedUuid);
-    setBtSearch(
-      btStore.selectedUuid
-        ? {
-            label: btStore.selectedUser ? btStore.selectedUser.nickname : "",
-            value: btStore.selectedUuid ? btStore.selectedUuid : "",
-          }
-        : null
-    );
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    btStore.selectedUuid && startInterval();
-  }, [btStore.selectedUuid]);
+    // 卸载组件时执行清理
+    return () => {
+      if (intervalRef.current !== null) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [storeSelectedUuid]);
 
   // 定时刷新计时器
-  async function startInterval() {
+  async function startInterval(selectedUser: any) {
     if (!intervalRef.current) {
-      // 首次请求拉去任务列表
+      // 探活请求
       intervalRef.current = setInterval(async () => {
-        const result = await request({
-          // url: `${btUrl.current}/api/v2/sync/maindata?rid=${rid}`,
-          url: `${btStore.selectedUser?.url}/api/v2/transfer/info`,
-          method: "POST",
-          toast: null,
-        });
-        if (
-          result.connection_status !== "connected" &&
-          intervalRef.current !== null
-        ) {
-          btloginfo.setLoggedIn(false);
+        try {
+          console.log("传入user", selectedUser);
+          const result = await request({
+            url: `${selectedUser.url}/api/v2/transfer/info`,
+            method: "POST",
+            toast: null,
+            // withOutLog: true,
+          });
+          if (
+            result.connection_status !== "connected" &&
+            intervalRef.current !== null
+          ) {
+            btloginfo.setLoggedIn(false);
+            // 连接disconnect后清理计时器
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          } else if (result.connection_status === "connected") {
+            storeSetTotalDownloadSpeed(result.dl_info_speed);
+            storeSetTotalUploadSpeed(result.up_info_speed);
+          }
+        } catch (err) {
+          console.log(err);
+
           // 错误后清理计时器
-          clearInterval(intervalRef.current);
-          intervalRef.current = null;
-        } else if (result.connection_status === "connected") {
-          btStore.setTotalDownloadSpeed(result.dl_info_speed);
-          btStore.setTotalUploadSpeed(result.up_info_speed);
+          if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
         }
       }, 2000); // 每2秒拉取一次
     }
@@ -189,10 +188,9 @@ export default function BtSetting() {
           <ComboboxTrigger>
             <ComboboxValue
               placeholder={
-                btStore.selectedUuid
-                  ? btStore.userList.find(
-                      (u: any) => u.uuid === btStore.selectedUuid
-                    )?.nickname
+                storeSelectedUuid
+                  ? storeUserList.find((u: any) => u.uuid === storeSelectedUuid)
+                      ?.nickname
                   : "选择服务器"
               }
             />
@@ -203,7 +201,7 @@ export default function BtSetting() {
               <ComboboxEmpty>
                 <Text style={{ color: disableColor, padding: 8 }}>无结果</Text>
               </ComboboxEmpty>
-              {btStore.userList.map((user: any) => (
+              {storeUserList.map((user: any) => (
                 <ComboboxItem key={user.uuid} value={user.uuid}>
                   {user.nickname}
                 </ComboboxItem>
@@ -212,7 +210,7 @@ export default function BtSetting() {
           </ComboboxContent>
         </Combobox>
         <Card>
-          {btStore.selectedUuid && (
+          {storeSelectedUuid && (
             <>
               <View
                 style={{
@@ -269,8 +267,8 @@ export default function BtSetting() {
           >
             <Text>主页地址</Text>
             <TextInput
-              value={btStore.defaultUrl}
-              onChangeText={btStore.setDefaultUrl}
+              value={storeDefaultUrl}
+              onChangeText={storeSetDefaultUrl}
               keyboardType="url"
               style={{
                 color: themeColor,
@@ -309,22 +307,23 @@ export default function BtSetting() {
             <Pressable onPress={() => btSheet.open()}>
               <Text style={{ color: canSelect }}>添加新服务器</Text>
             </Pressable>
-            {btStore.selectedUuid && (
+            {storeSelectedUuid && (
               <>
                 <Separator style={{ marginVertical: 8 }} />
                 <Pressable
                   onPress={() => {
-                    if (btStore.selectedUuid) {
-                      const updatedUserList = btStore.userList.filter(
-                        (u: any) => u.uuid !== btStore.selectedUuid
+                    if (storeSelectedUuid) {
+                      const updatedUserList = storeUserList.filter(
+                        (u: any) => u.uuid !== storeSelectedUuid
                       );
-                      btStore.setUserList(updatedUserList);
+                      storeSetUserList(updatedUserList);
                       SecureStore.setItemAsync(
                         "bt_userList",
                         JSON.stringify(updatedUserList)
                       );
                       setBtSearch(null);
-                      btStore.setSelectedUuid("");
+                      storeSetSelectedUuid("");
+                      storeSetSelectedUser({});
                       SecureStore.deleteItemAsync("bt_selectedUuid");
                       btloginfo.setLoggedIn(false);
                     }
