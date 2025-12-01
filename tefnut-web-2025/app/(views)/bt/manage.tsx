@@ -1,73 +1,57 @@
 import { ScrollView } from "@/components/ui/scroll-view";
-import { Text } from "@/components/ui/text";
 import { View } from "@/components/ui/view";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { Spinner } from "@/components/ui/spinner";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Link } from "@/components/ui/link";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
-import {
-  Plus,
-  ClipboardPaste,
-  Pause,
-  Trash2,
-  Play,
-  Compass,
-} from "lucide-react-native";
+import { Plus, ClipboardPaste, Compass } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useNavigation } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { useEffect, useState, useRef } from "react";
 import { Pressable, Platform } from "react-native";
 import { request } from "@/utils/request";
-import * as SecureStore from "expo-secure-store";
 import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { showSuccessAlert } from "@/components/ui/alert";
-
-const stateMap: { [key: string]: string } = {
-  error: "错误",
-  pausedUP: "上传已暂停",
-  pausedDL: "下载已暂停",
-  queuedUP: "排队上传",
-  queuedDL: "排队下载",
-  checkingUP: "检查上传",
-  checkingDL: "检查下载",
-  downloading: "下载中",
-  stalledDL: "下载停滞",
-  checkingResumeData: "检查恢复数据",
-  moving: "移动中",
-  uploading: "上传中",
-  stalledUP: "上传停滞",
-  unknown: "未知状态",
-};
+import { BtTorrentInfo } from "@/components/bt/btTorrentInfo";
+import { BtEmptyList } from "@/components/bt/btEmptyList";
+import { BtDisplayCard } from "@/components/bt/btDisplayCard";
+import { BtToalInfoHud } from "@/components/bt/btTotalInfoHud";
 
 export default function BtManageScreen() {
   const { toast } = useToast();
-  const btStore = useBtStore();
+  // bt zustand状态管理
+  const storeSelectedUser = useBtStore((state) => state.selectedUser);
+  const storeTorrentsList = useBtStore((state) => state.torrentsList);
+  const storeBrowserUrl = useBtStore((state) => state.browserUrl);
+  const storeListOrder = useBtStore((state) => state.listOrder);
+  const storeSetBrowserUrl = useBtStore((state) => state.setBrowserUrl);
+  const storeSetTorrentsList = useBtStore((state) => state.setTorrentsList);
+
   const navigation = useNavigation();
+  // 添加磁力弹窗
   const magnetBottomSheet = useBottomSheet();
+  // 种子管理弹窗
+  const torrentInfoSheet = useBottomSheet();
+  const [selectTorrent, setSelectTorrent] = useState<{
+    [key: string]: string | number;
+  }>({});
   // 磁力链接输入内容
   const [magnet, setMagnet] = useState("");
   // 种子列表加载状态
   const [listLoading, setListLoading] = useState(true);
   // 种子添加加载状态
   const [adding, setAdding] = useState(false);
-  // 种子管理加载状态
-  const [manageLoading, setManageLoading] = useState<{
-    [key: string]: boolean;
-  }>({});
 
   // 计时器id，防止重复生成
   const intervalRef = useRef<number | null>(null);
-  const btUrl = useRef<string | null>("");
 
   useEffect(() => {
     (async () => {
-      btUrl.current = await SecureStore.getItemAsync("bt_url");
       // 立刻执行一次，随后计时器启动
       await fetchTorrents(true);
       navigation.setOptions({
@@ -161,13 +145,13 @@ export default function BtManageScreen() {
 
   // 全局磁力，变化即添加,静默
   useEffect(() => {
-    console.log(`调用下载${btStore.browserUrl}`);
-    btStore.browserUrl && handleSubmit(btStore.browserUrl, true);
+    console.log(`调用下载${storeBrowserUrl}`);
+    storeBrowserUrl && handleSubmit(storeBrowserUrl, true);
     return () => {
       console.log("清空浏览器捕获的磁力");
-      btStore.setBrowserUrl("");
+      storeSetBrowserUrl("");
     };
-  }, [btStore.browserUrl]);
+  }, [storeBrowserUrl]);
 
   // 快速剪贴板添加
   async function handleClipboardAdd() {
@@ -193,7 +177,7 @@ export default function BtManageScreen() {
           clearInterval(intervalRef.current);
           intervalRef.current = null;
         }
-      }, 5000); // 每15秒拉取一次
+      }, 2000); // 每2秒拉取一次
     }
   }
 
@@ -203,12 +187,12 @@ export default function BtManageScreen() {
     try {
       const response = await request({
         // url: `${btUrl.current}/api/v2/sync/maindata?rid=${rid}`,
-        url: `${btUrl.current}/api/v2/torrents/info`,
+        url: `${storeSelectedUser?.url}/api/v2/torrents/info?sort=${storeListOrder}`,
         method: "POST",
         toast,
         withOutLog: true,
       });
-      btStore.setTorrentsList(response);
+      storeSetTorrentsList(response);
     } catch (error) {
       console.log("Error fetching torrents:", error);
       return false;
@@ -229,10 +213,15 @@ export default function BtManageScreen() {
     const formData = new FormData();
     formData.append("urls", Magnet);
     magnetBottomSheet.close();
-    console.log("Submitting magnet link:", Magnet, formData, btUrl.current);
+    console.log(
+      "Submitting magnet link:",
+      Magnet,
+      formData,
+      storeSelectedUser?.url
+    );
     // 从zustand中取login的url
     const response = await request({
-      url: `${btUrl.current}/api/v2/torrents/add`,
+      url: `${storeSelectedUser?.url}/api/v2/torrents/add`,
       method: "POST",
       headers: {
         "Content-Type": "multipart/form-data;",
@@ -260,51 +249,6 @@ export default function BtManageScreen() {
     }
   }
 
-  // 操作按钮统一方法
-  function getManageButton(
-    iconName: React.ComponentType,
-    hash: string,
-    url: string,
-    type:
-      | "link"
-      | "success"
-      | "default"
-      | "destructive"
-      | "outline"
-      | "secondary"
-      | "ghost",
-    moreExt?: string
-  ) {
-    return (
-      <Button
-        icon={iconName}
-        size="icon"
-        loading={!!manageLoading[hash]}
-        onPress={async () => {
-          setManageLoading((prev) => ({
-            ...prev,
-            [hash]: true,
-          }));
-          try {
-            const response = await request({
-              url: url,
-              data: `hashes=${hash}${moreExt || ""}`,
-              method: "POST",
-              toast,
-            });
-          } catch (err) {
-          } finally {
-            setManageLoading((prev) => ({
-              ...prev,
-              [hash]: false,
-            }));
-          }
-        }}
-        variant={type}
-      />
-    );
-  }
-
   return (
     <>
       <SafeAreaView edges={["top", "left", "right"]} style={{ flex: 1 }}>
@@ -321,125 +265,94 @@ export default function BtManageScreen() {
           </View>
         )}
         {!listLoading && (
-          <ScrollView
-            style={{
-              flex: 1,
-              padding: 12,
-              paddingTop: Platform.OS === "android" ? 0 : 70,
-            }}
-          >
-            <View style={{ gap: 16 }}>
-              {btStore.torrentsList.length === 0 && <Text>无任务</Text>}
-              {btStore.torrentsList.map((torrent, index) => (
-                <Card key={index}>
-                  <CardContent>
-                    <Text style={{ marginBottom: 8, fontWeight: "600" }}>
-                      {torrent.name}
-                    </Text>
-                    <Text
-                      variant="caption"
-                      style={{
-                        color: "#666",
-                        fontSize: 12,
-                        textAlign: "right",
+          <>
+            {/* 汇总信息hud */}
+            <BtToalInfoHud />
+            {/* 种子列表 */}
+            <ScrollView
+              style={{
+                flex: 1,
+                padding: 12,
+              }}
+              contentContainerStyle={{ flexGrow: 1 }} // 允许内容区域撑满高度
+            >
+              <View style={{ flex: 1, gap: 16 }}>
+                {storeTorrentsList.length === 0 && <BtEmptyList />}
+                {storeTorrentsList.map((torrent, index) => (
+                  <Card key={index}>
+                    <Pressable
+                      onPress={() => {
+                        setSelectTorrent(torrent);
+                        torrentInfoSheet.open();
                       }}
                     >
-                      {(torrent.progress * 100).toFixed(2)}%
-                    </Text>
-                    <Progress value={torrent.progress * 100} height={5} />
-                    <View style={{ flexDirection: "row", marginTop: 8 }}>
-                      <View style={{ flex: 1 }}>
-                        <Text>
-                          状态: {stateMap[torrent.state] || torrent.state}
-                        </Text>
-                        <Text>
-                          下载速度: {(torrent.dlspeed / 1024 / 1024).toFixed(2)}{" "}
-                          MB/s
-                        </Text>
-                        <Text>
-                          上传速度: {(torrent.upspeed / 1024 / 1024).toFixed(2)}{" "}
-                          MB/s
-                        </Text>
-                      </View>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignSelf: "center",
-                          gap: 8,
-                        }}
-                      >
-                        {torrent.state === "downloading" &&
-                          getManageButton(
-                            Pause,
-                            torrent.hash,
-                            `${btUrl.current}/api/v2/torrents/pause`,
-                            "outline"
-                          )}
-                        {torrent.state === "pausedDL" &&
-                          getManageButton(
-                            Play,
-                            torrent.hash,
-                            `${btUrl.current}/api/v2/torrents/resume`,
-                            "default"
-                          )}
-                        {getManageButton(
-                          Trash2,
-                          torrent.hash,
-                          `${btUrl.current}/api/v2/torrents/delete`,
-                          "destructive",
-                          "&deleteFiles=true"
-                        )}
-                      </View>
-                    </View>
-                  </CardContent>
-                </Card>
-              ))}
-            </View>
-            <BottomSheet
-              isVisible={magnetBottomSheet.isVisible}
-              onClose={() => {
-                magnetBottomSheet.close();
-                setMagnet("");
-              }}
-              title="新增磁力下载"
-              snapPoints={[0.3, 0.5]}
-              enableBackdropDismiss={true}
-            >
-              <View style={{ gap: 20 }}>
-                <View style={{ gap: 12 }}>
-                  <Input
-                    value={magnet}
-                    onChangeText={setMagnet}
-                    variant="outline"
-                    placeholder="Enter your magnet link"
-                  />
-                </View>
-                <View
-                  style={{
-                    flex: 1,
-                    width: "100%",
-                    flexDirection: "row",
-                    gap: 12,
-                    marginTop: 12,
-                  }}
-                >
-                  <Button
-                    variant="outline"
-                    onPress={() => {
-                      magnetBottomSheet.close();
-                      setMagnet("");
-                    }}
-                    style={{ flex: 1 }}
-                  >
-                    取消
-                  </Button>
-                  <Button onPress={handleSubmit} style={{ flex: 1 }}>
-                    添加
-                  </Button>
-                </View>
+                      {/* 任务卡片 */}
+                      <BtDisplayCard torrent={torrent} />
+                    </Pressable>
+                  </Card>
+                ))}
               </View>
-            </BottomSheet>
-          </ScrollView>
+              {/* 磁力添加sheet */}
+              <BottomSheet
+                isVisible={magnetBottomSheet.isVisible}
+                onClose={() => {
+                  magnetBottomSheet.close();
+                  setMagnet("");
+                }}
+                title="新增磁力下载"
+                snapPoints={[0.3, 0.5]}
+                enableBackdropDismiss={true}
+              >
+                <View style={{ gap: 20 }}>
+                  <View style={{ gap: 12 }}>
+                    <Input
+                      value={magnet}
+                      onChangeText={setMagnet}
+                      variant="outline"
+                      placeholder="Enter your magnet link"
+                    />
+                  </View>
+                  <View
+                    style={{
+                      flex: 1,
+                      width: "100%",
+                      flexDirection: "row",
+                      gap: 12,
+                      marginTop: 12,
+                    }}
+                  >
+                    <Button
+                      variant="outline"
+                      onPress={() => {
+                        magnetBottomSheet.close();
+                        setMagnet("");
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      取消
+                    </Button>
+                    <Button onPress={handleSubmit} style={{ flex: 1 }}>
+                      添加
+                    </Button>
+                  </View>
+                </View>
+              </BottomSheet>
+              {/* 磁力信息页 */}
+              <BottomSheet
+                isVisible={torrentInfoSheet.isVisible}
+                onClose={() => {
+                  torrentInfoSheet.close();
+                }}
+                snapPoints={[0.7, 0.9]}
+                enableBackdropDismiss={true}
+              >
+                <BtTorrentInfo
+                  torrent={selectTorrent}
+                  sheetRef={torrentInfoSheet}
+                />
+              </BottomSheet>
+            </ScrollView>
+          </>
         )}
       </SafeAreaView>
     </>

@@ -12,7 +12,7 @@
 //   controller.abort(); // 无 toast
 // }, 3000);
 
-// 封装的axios，请注意因为使用toast弹出信息，调用的组件必须包裹<ToastProvider>，传入toast给request
+// 封装的axios，请注意因为使用toast弹出信息，如果toast则调用的组件必须包裹<ToastProvider>，传入toast给request
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 // 创建 axios 实例
 const instance = axios.create({
@@ -46,7 +46,7 @@ instance.interceptors.response.use(
 interface RequestOptions extends AxiosRequestConfig {
   silence?: boolean; // 是否静默（不弹 toast）
   controller?: AbortController; // 外部传入 abort controller
-  toast: any; // 传入useToast的toast
+  toast?: any; // 传入useToast的toast
   specialErr?: {
     keywords: string; // 错误关键词，用于http status无法判断错误信息时
     msg: string; // 检测到关键词时返回的错误信息
@@ -84,7 +84,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
       specialErr &&
       res.data.includes(specialErr.keywords)
     ) {
-      toast({
+      toast?.({
         title: "错误",
         description: specialErr.msg,
         variant: "error",
@@ -102,7 +102,7 @@ export async function request<T = any>(options: RequestOptions): Promise<T> {
       const msg =
         err?.response?.data?.message || err?.message || "请求失败，请稍后重试";
 
-      toast({
+      toast?.({
         title: "错误",
         description: msg,
         variant: "error",
