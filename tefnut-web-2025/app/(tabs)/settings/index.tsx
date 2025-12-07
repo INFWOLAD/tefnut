@@ -6,11 +6,14 @@ import { AvoidKeyboard } from "@/components/ui/avoid-keyboard";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useColor } from "@/hooks/useColor";
 import BtSetting from "@/components/bt/btSetting";
+import DeSetting from "@/components/development/deSetting";
+import Constants from "expo-constants";
 
 export default function SettingsScreen() {
   // 包版本相关
   const appVersion = Application.nativeApplicationVersion || "dev";
   const buildNumber = Application.nativeBuildVersion;
+  const env = Constants.expoConfig?.extra?.APP_ENV;
   // textinput组件用颜色
   const themeColor = useColor("text");
   const disableColor = useColor("textMuted");
@@ -37,6 +40,23 @@ export default function SettingsScreen() {
         </Text>
         {/* BT相关设置 */}
         <BtSetting />
+        {env === "development" && (
+          <>
+            <Text
+              style={{
+                color: themeColor,
+                opacity: 0.6,
+                marginLeft: 4,
+                paddingTop: 24,
+                fontSize: 14,
+              }}
+            >
+              开发者选项
+            </Text>
+            <DeSetting />
+          </>
+        )}
+
         <Text
           style={{
             color: themeColor,
@@ -47,6 +67,7 @@ export default function SettingsScreen() {
           }}
         >
           Tefnut {appVersion} ({buildNumber})
+          {(env !== "production" && env) || ""}
         </Text>
       </ScrollView>
 
