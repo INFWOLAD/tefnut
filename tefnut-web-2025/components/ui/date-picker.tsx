@@ -1,11 +1,11 @@
-import { BottomSheet, useBottomSheet } from '@/components/ui/bottom-sheet';
-import { Button } from '@/components/ui/button';
-import { Icon } from '@/components/ui/icon';
-import { ScrollView } from '@/components/ui/scroll-view';
-import { Text } from '@/components/ui/text';
-import { View } from '@/components/ui/view';
-import { useColor } from '@/hooks/useColor';
-import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from '@/theme/globals';
+import { BottomSheet, useBottomSheet } from "@/components/ui/bottom-sheet";
+import { Button } from "@/components/ui/button";
+import { Icon } from "@/components/ui/icon";
+import { ScrollView } from "@/components/ui/scroll-view";
+import { Text } from "@/components/ui/text";
+import { View } from "@/components/ui/view";
+import { useColor } from "@/hooks/useColor";
+import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from "@/theme/globals";
 import {
   Calendar,
   CalendarClock,
@@ -15,9 +15,9 @@ import {
   Clock,
   CalendarRange,
   ArrowRight,
-} from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
-import { TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+} from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
+import { TextStyle, TouchableOpacity, ViewStyle } from "react-native";
 
 export interface DateRange {
   startDate: Date | null;
@@ -33,20 +33,20 @@ interface BaseDatePickerProps {
   style?: ViewStyle;
   minimumDate?: Date;
   maximumDate?: Date;
-  timeFormat?: '12' | '24';
-  variant?: 'filled' | 'outline' | 'group';
+  timeFormat?: "12" | "24";
+  variant?: "filled" | "outline" | "group";
   labelStyle?: TextStyle;
   errorStyle?: TextStyle;
 }
 
 interface DatePickerPropsRange extends BaseDatePickerProps {
-  mode: 'range';
+  mode: "range";
   value?: DateRange;
   onChange?: (value: DateRange | undefined) => void;
 }
 
 interface DatePickerPropsDate extends BaseDatePickerProps {
-  mode?: 'date' | 'time' | 'datetime';
+  mode?: "date" | "time" | "datetime";
   value?: Date;
   onChange?: (value: Date | undefined) => void;
 }
@@ -54,21 +54,21 @@ interface DatePickerPropsDate extends BaseDatePickerProps {
 export type DatePickerProps = DatePickerPropsRange | DatePickerPropsDate;
 
 const MONTHS = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
+  "一月",
+  "二月",
+  "三月",
+  "四月",
+  "五月",
+  "六月",
+  "七月",
+  "八月",
+  "九月",
+  "十月",
+  "十一月",
+  "十二月",
 ];
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS = ["日", "一", "二", "三", "四", "五", "六"];
 
 // Generate year range (current year ± 50 years)
 const currentYear = new Date().getFullYear();
@@ -80,10 +80,10 @@ const isDateRange = (
 ): value is DateRange => {
   return (
     value !== undefined &&
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'startDate' in value &&
-    'endDate' in value
+    "startDate" in value &&
+    "startDate" in value
   );
 };
 
@@ -91,18 +91,18 @@ export function DatePicker(props: DatePickerProps) {
   const {
     label,
     error,
-    placeholder = 'Select date',
+    placeholder = "Select date",
     disabled = false,
     style,
     minimumDate,
     maximumDate,
-    timeFormat = '24',
-    variant = 'filled',
+    timeFormat = "24",
+    variant = "filled",
     labelStyle,
     errorStyle,
   } = props;
 
-  const mode = props.mode || 'date';
+  const mode = props.mode || "date";
   const value = props.value;
   const onChange = props.onChange;
 
@@ -110,7 +110,7 @@ export function DatePicker(props: DatePickerProps) {
 
   // Get the current date for navigation, prioritizing single date or range start date
   const getCurrentDate = useCallback(() => {
-    if (mode === 'range') {
+    if (mode === "range") {
       const rangeValue = isDateRange(value)
         ? value
         : { startDate: null, endDate: null };
@@ -120,32 +120,32 @@ export function DatePicker(props: DatePickerProps) {
   }, [value, mode]);
 
   const [currentDate, setCurrentDate] = useState(() => getCurrentDate());
-  const [viewMode, setViewMode] = useState<'date' | 'time' | 'month' | 'year'>(
-    'date'
+  const [viewMode, setViewMode] = useState<"date" | "time" | "month" | "year">(
+    "date"
   );
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
 
   // Range selection state for temporary storage during selection
   const [tempRange, setTempRange] = useState<DateRange>(() =>
-    mode === 'range' && isDateRange(value)
+    mode === "range" && isDateRange(value)
       ? value
       : { startDate: null, endDate: null }
   );
 
   // Theme colors
-  const cardColor = useColor('card');
-  const borderColor = useColor('border');
-  const primaryColor = useColor('primary');
-  const primaryForegroundColor = useColor('primaryForeground');
-  const mutedColor = useColor('muted');
-  const textMutedColor = useColor('textMuted');
-  const mutedForegroundColor = useColor('mutedForeground');
-  const textColor = useColor('text');
-  const errorColor = useColor('red');
+  const cardColor = useColor("card");
+  const borderColor = useColor("border");
+  const primaryColor = useColor("primary");
+  const primaryForegroundColor = useColor("primaryForeground");
+  const mutedColor = useColor("muted");
+  const textMutedColor = useColor("textMuted");
+  const mutedForegroundColor = useColor("mutedForeground");
+  const textColor = useColor("text");
+  const errorColor = useColor("red");
 
   const formatDisplayValue = useCallback(() => {
-    if (mode === 'range') {
+    if (mode === "range") {
       const rangeValue = isDateRange(value)
         ? value
         : { startDate: null, endDate: null };
@@ -156,10 +156,10 @@ export function DatePicker(props: DatePickerProps) {
 
       const startStr = rangeValue.startDate
         ? rangeValue.startDate.toLocaleDateString()
-        : '';
+        : "";
       const endStr = rangeValue.endDate
         ? rangeValue.endDate.toLocaleDateString()
-        : '';
+        : "";
 
       if (startStr && endStr) {
         return `${startStr} - ${endStr}`;
@@ -175,30 +175,30 @@ export function DatePicker(props: DatePickerProps) {
     if (!dateValue) return placeholder;
 
     switch (mode) {
-      case 'time':
-        if (timeFormat === '12') {
+      case "time":
+        if (timeFormat === "12") {
           return dateValue.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
+            hour: "2-digit",
+            minute: "2-digit",
             hour12: true,
           });
         }
         return dateValue.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
+          hour: "2-digit",
+          minute: "2-digit",
           hour12: false,
         });
-      case 'datetime':
+      case "datetime":
         const timeStr =
-          timeFormat === '12'
+          timeFormat === "12"
             ? dateValue.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
+                hour: "2-digit",
+                minute: "2-digit",
                 hour12: true,
               })
             : dateValue.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
+                hour: "2-digit",
+                minute: "2-digit",
                 hour12: false,
               });
         return `${dateValue.toLocaleDateString()} ${timeStr}`;
@@ -220,7 +220,7 @@ export function DatePicker(props: DatePickerProps) {
   // Helper function to check if a date is in range
   const isDateInRange = useCallback(
     (date: Date) => {
-      if (mode !== 'range' || !tempRange.startDate || !tempRange.endDate) {
+      if (mode !== "range" || !tempRange.startDate || !tempRange.endDate) {
         return false;
       }
 
@@ -242,7 +242,7 @@ export function DatePicker(props: DatePickerProps) {
   // Helper function to check if a date is a range endpoint
   const isRangeEndpoint = useCallback(
     (date: Date) => {
-      if (mode !== 'range') {
+      if (mode !== "range") {
         return { isStart: false, isEnd: false };
       }
 
@@ -341,7 +341,7 @@ export function DatePicker(props: DatePickerProps) {
   };
 
   const handleDateSelect = (day: number) => {
-    if (mode === 'range') {
+    if (mode === "range") {
       handleRangeSelect(day);
       return;
     }
@@ -357,11 +357,11 @@ export function DatePicker(props: DatePickerProps) {
 
     setCurrentDate(newDate);
 
-    if (mode === 'date') {
+    if (mode === "date") {
       (onChange as (value: Date | undefined) => void)?.(newDate);
       close();
-    } else if (mode === 'datetime') {
-      setViewMode('time');
+    } else if (mode === "datetime") {
+      setViewMode("time");
     }
   };
 
@@ -371,9 +371,9 @@ export function DatePicker(props: DatePickerProps) {
     setCurrentDate(newDate);
   };
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
+  const navigateMonth = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
-    if (direction === 'prev') {
+    if (direction === "prev") {
       newDate.setMonth(newDate.getMonth() - 1);
     } else {
       newDate.setMonth(newDate.getMonth() + 1);
@@ -396,7 +396,7 @@ export function DatePicker(props: DatePickerProps) {
   };
 
   const handleConfirm = () => {
-    if (mode === 'range') {
+    if (mode === "range") {
       (onChange as (value: DateRange | undefined) => void)?.(tempRange);
     } else {
       (onChange as (value: Date | undefined) => void)?.(currentDate);
@@ -408,16 +408,16 @@ export function DatePicker(props: DatePickerProps) {
     const today = new Date();
     setCurrentDate(today);
 
-    if (mode === 'range') {
+    if (mode === "range") {
       setTempRange({ startDate: today, endDate: null });
-    } else if (mode === 'date') {
+    } else if (mode === "date") {
       (onChange as (value: Date | undefined) => void)?.(today);
       close();
     }
   };
 
   const clearSelection = () => {
-    if (mode === 'range') {
+    if (mode === "range") {
       setTempRange({ startDate: null, endDate: null });
       (onChange as (value: DateRange | undefined) => void)?.(undefined);
     } else {
@@ -428,15 +428,15 @@ export function DatePicker(props: DatePickerProps) {
   const renderMonthYearHeader = () => (
     <View
       style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 24,
         paddingHorizontal: 8,
       }}
     >
       <TouchableOpacity
-        onPress={() => navigateMonth('prev')}
+        onPress={() => navigateMonth("prev")}
         style={{
           padding: 10,
           borderRadius: CORNERS,
@@ -449,9 +449,9 @@ export function DatePicker(props: DatePickerProps) {
       <View
         style={{
           flex: 1,
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
           gap: 12,
           marginHorizontal: 12,
         }}
@@ -460,16 +460,16 @@ export function DatePicker(props: DatePickerProps) {
           onPress={() => setShowMonthPicker(true)}
           style={{
             flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
             paddingHorizontal: 12,
             paddingVertical: 10,
             borderRadius: CORNERS,
             backgroundColor: mutedColor,
           }}
         >
-          <Text variant='subtitle' style={{ marginRight: 4 }}>
+          <Text variant="subtitle" style={{ marginRight: 4 }}>
             {MONTHS[calendarData.month]}
           </Text>
           <ChevronDown size={16} color={textColor} />
@@ -479,16 +479,16 @@ export function DatePicker(props: DatePickerProps) {
           onPress={() => setShowYearPicker(true)}
           style={{
             flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
             paddingHorizontal: 16,
             paddingVertical: 10,
             borderRadius: CORNERS,
             backgroundColor: mutedColor,
           }}
         >
-          <Text variant='subtitle' style={{ marginRight: 4 }}>
+          <Text variant="subtitle" style={{ marginRight: 4 }}>
             {calendarData.year}
           </Text>
           <ChevronDown size={16} color={textColor} />
@@ -496,7 +496,7 @@ export function DatePicker(props: DatePickerProps) {
       </View>
 
       <TouchableOpacity
-        onPress={() => navigateMonth('next')}
+        onPress={() => navigateMonth("next")}
         style={{
           padding: 10,
           borderRadius: CORNERS,
@@ -514,7 +514,7 @@ export function DatePicker(props: DatePickerProps) {
       {/* Day headers */}
       <View
         style={{
-          flexDirection: 'row',
+          flexDirection: "row",
           marginBottom: 12,
           paddingHorizontal: 4,
         }}
@@ -524,10 +524,10 @@ export function DatePicker(props: DatePickerProps) {
             key={day}
             style={{
               flex: 1,
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
-            <Text variant='caption' style={{ fontSize: 12, fontWeight: '600' }}>
+            <Text variant="caption" style={{ fontSize: 12, fontWeight: "600" }}>
               {day}
             </Text>
           </View>
@@ -540,7 +540,7 @@ export function DatePicker(props: DatePickerProps) {
           <View
             key={weekIndex}
             style={{
-              flexDirection: 'row',
+              flexDirection: "row",
               marginBottom: 4,
             }}
           >
@@ -577,12 +577,12 @@ export function DatePicker(props: DatePickerProps) {
                   style={[
                     {
                       flex: 1,
-                      alignItems: 'center',
+                      alignItems: "center",
                       backgroundColor:
-                        mode === 'range' && inRange
+                        mode === "range" && inRange
                           ? primaryColor
-                          : 'transparent',
-                      paddingHorizontal: mode === 'range' && inRange ? 0 : 0,
+                          : "transparent",
+                      paddingHorizontal: mode === "range" && inRange ? 0 : 0,
                     },
                     rangeEndpoints.isStart && {
                       borderTopLeftRadius: CORNERS,
@@ -610,15 +610,15 @@ export function DatePicker(props: DatePickerProps) {
                             rangeEndpoints.isStart || rangeEndpoints.isEnd
                               ? primaryColor
                               : inRange
-                              ? primaryColor
-                              : isSelected
-                              ? primaryColor
-                              : 'transparent',
+                                ? primaryColor
+                                : isSelected
+                                  ? primaryColor
+                                  : "transparent",
                           borderWidth:
                             isToday && !isSelected && !inRange ? 1 : 0,
                           borderColor: primaryColor,
-                          justifyContent: 'center',
-                          alignItems: 'center',
+                          justifyContent: "center",
+                          alignItems: "center",
                           opacity: disabled ? 0.3 : 1,
                         },
                         rangeEndpoints.isStart && {
@@ -637,19 +637,19 @@ export function DatePicker(props: DatePickerProps) {
                             rangeEndpoints.isStart || rangeEndpoints.isEnd
                               ? primaryForegroundColor
                               : inRange
-                              ? primaryForegroundColor
-                              : isSelected
-                              ? primaryForegroundColor
-                              : disabled
-                              ? mutedForegroundColor
-                              : textColor,
+                                ? primaryForegroundColor
+                                : isSelected
+                                  ? primaryForegroundColor
+                                  : disabled
+                                    ? mutedForegroundColor
+                                    : textColor,
                           fontWeight:
                             rangeEndpoints.isStart ||
                             rangeEndpoints.isEnd ||
                             isSelected ||
                             isToday
-                              ? '600'
-                              : '400',
+                              ? "600"
+                              : "400",
                           fontSize: FONT_SIZE,
                         }}
                       >
@@ -667,12 +667,12 @@ export function DatePicker(props: DatePickerProps) {
       </View>
 
       {/* Range selection info */}
-      {mode === 'range' && (
+      {mode === "range" && (
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
             marginTop: 16,
             padding: 20,
             paddingHorizontal: 36,
@@ -680,22 +680,22 @@ export function DatePicker(props: DatePickerProps) {
             borderRadius: BORDER_RADIUS,
           }}
         >
-          <Text variant='subtitle' style={{ flex: 1 }}>
+          <Text variant="subtitle" style={{ flex: 1 }}>
             {tempRange.startDate
               ? `${tempRange.startDate.toLocaleDateString()}`
-              : 'Start date'}
+              : "起始日期"}
           </Text>
 
           <View
-            style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+            style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
           >
             <ArrowRight color={textColor} strokeWidth={3} />
           </View>
 
-          <Text variant='subtitle' style={{ flex: 1, textAlign: 'right' }}>
+          <Text variant="subtitle" style={{ flex: 1, textAlign: "right" }}>
             {tempRange.endDate
               ? `${tempRange.endDate.toLocaleDateString()}`
-              : 'End date'}
+              : "结束日期"}
           </Text>
         </View>
       )}
@@ -712,7 +712,7 @@ export function DatePicker(props: DatePickerProps) {
       <View style={{ height: 300 }}>
         <View
           style={{
-            flexDirection: 'row',
+            flexDirection: "row",
             flex: 1,
             gap: 16,
           }}
@@ -720,8 +720,8 @@ export function DatePicker(props: DatePickerProps) {
           {/* Hours */}
           <View style={{ flex: 1 }}>
             <Text
-              variant='caption'
-              style={{ textAlign: 'center', marginBottom: 12 }}
+              variant="caption"
+              style={{ textAlign: "center", marginBottom: 12 }}
             >
               Hours
             </Text>
@@ -731,18 +731,18 @@ export function DatePicker(props: DatePickerProps) {
                 paddingVertical: 20,
               }}
             >
-              {Array.from({ length: timeFormat === '12' ? 12 : 24 }, (_, i) =>
-                timeFormat === '12' ? (i === 0 ? 12 : i) : i
+              {Array.from({ length: timeFormat === "12" ? 12 : 24 }, (_, i) =>
+                timeFormat === "12" ? (i === 0 ? 12 : i) : i
               ).map((hour) => {
                 const actualHour =
-                  timeFormat === '12'
+                  timeFormat === "12"
                     ? hour === 12
                       ? isPM
                         ? 12
                         : 0
                       : isPM
-                      ? hour + 12
-                      : hour
+                        ? hour + 12
+                        : hour
                     : hour;
 
                 const isSelected = actualHour === selectedHours;
@@ -759,19 +759,19 @@ export function DatePicker(props: DatePickerProps) {
                       borderRadius: CORNERS,
                       backgroundColor: isSelected
                         ? primaryColor
-                        : 'transparent',
+                        : "transparent",
                       marginVertical: 2,
-                      alignItems: 'center',
+                      alignItems: "center",
                     }}
                   >
                     <Text
                       style={{
                         color: isSelected ? primaryForegroundColor : textColor,
-                        fontWeight: isSelected ? '600' : '400',
+                        fontWeight: isSelected ? "600" : "400",
                         fontSize: FONT_SIZE,
                       }}
                     >
-                      {hour.toString().padStart(2, '0')}
+                      {hour.toString().padStart(2, "0")}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -782,8 +782,8 @@ export function DatePicker(props: DatePickerProps) {
           {/* Minutes */}
           <View style={{ flex: 1 }}>
             <Text
-              variant='caption'
-              style={{ textAlign: 'center', marginBottom: 12 }}
+              variant="caption"
+              style={{ textAlign: "center", marginBottom: 12 }}
             >
               Minutes
             </Text>
@@ -802,9 +802,9 @@ export function DatePicker(props: DatePickerProps) {
                     paddingHorizontal: 16,
                     borderRadius: CORNERS,
                     backgroundColor:
-                      minute === selectedMinutes ? primaryColor : 'transparent',
+                      minute === selectedMinutes ? primaryColor : "transparent",
                     marginVertical: 2,
-                    alignItems: 'center',
+                    alignItems: "center",
                   }}
                 >
                   <Text
@@ -813,11 +813,11 @@ export function DatePicker(props: DatePickerProps) {
                         minute === selectedMinutes
                           ? primaryForegroundColor
                           : textColor,
-                      fontWeight: minute === selectedMinutes ? '600' : '400',
+                      fontWeight: minute === selectedMinutes ? "600" : "400",
                       fontSize: FONT_SIZE,
                     }}
                   >
-                    {minute.toString().padStart(2, '0')}
+                    {minute.toString().padStart(2, "0")}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -825,11 +825,11 @@ export function DatePicker(props: DatePickerProps) {
           </View>
 
           {/* AM/PM picker for 12-hour format */}
-          {timeFormat === '12' && (
+          {timeFormat === "12" && (
             <View style={{ flex: 0.5 }}>
               <Text
-                variant='caption'
-                style={{ textAlign: 'center', marginBottom: 12 }}
+                variant="caption"
+                style={{ textAlign: "center", marginBottom: 12 }}
               >
                 Period
               </Text>
@@ -839,8 +839,8 @@ export function DatePicker(props: DatePickerProps) {
                   gap: 8,
                 }}
               >
-                {['AM', 'PM'].map((period) => {
-                  const isAM = period === 'AM';
+                {["AM", "PM"].map((period) => {
+                  const isAM = period === "AM";
                   const isSelected = isAM ? !isPM : isPM;
 
                   return (
@@ -852,8 +852,8 @@ export function DatePicker(props: DatePickerProps) {
                             ? selectedHours - 12
                             : selectedHours
                           : selectedHours < 12
-                          ? selectedHours + 12
-                          : selectedHours;
+                            ? selectedHours + 12
+                            : selectedHours;
                         handleTimeChange(newHours, selectedMinutes);
                       }}
                       style={{
@@ -862,8 +862,8 @@ export function DatePicker(props: DatePickerProps) {
                         borderRadius: CORNERS,
                         backgroundColor: isSelected
                           ? primaryColor
-                          : 'transparent',
-                        alignItems: 'center',
+                          : "transparent",
+                        alignItems: "center",
                       }}
                     >
                       <Text
@@ -871,7 +871,7 @@ export function DatePicker(props: DatePickerProps) {
                           color: isSelected
                             ? primaryForegroundColor
                             : textColor,
-                          fontWeight: isSelected ? '600' : '400',
+                          fontWeight: isSelected ? "600" : "400",
                           fontSize: FONT_SIZE,
                         }}
                       >
@@ -905,9 +905,9 @@ export function DatePicker(props: DatePickerProps) {
               paddingHorizontal: 20,
               borderRadius: CORNERS,
               backgroundColor:
-                index === calendarData.month ? primaryColor : 'transparent',
+                index === calendarData.month ? primaryColor : "transparent",
               marginVertical: 2,
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
             <Text
@@ -916,7 +916,7 @@ export function DatePicker(props: DatePickerProps) {
                   index === calendarData.month
                     ? primaryForegroundColor
                     : textColor,
-                fontWeight: index === calendarData.month ? '600' : '400',
+                fontWeight: index === calendarData.month ? "600" : "400",
                 fontSize: FONT_SIZE,
               }}
             >
@@ -945,9 +945,9 @@ export function DatePicker(props: DatePickerProps) {
               paddingHorizontal: 20,
               borderRadius: CORNERS,
               backgroundColor:
-                year === calendarData.year ? primaryColor : 'transparent',
+                year === calendarData.year ? primaryColor : "transparent",
               marginVertical: 2,
-              alignItems: 'center',
+              alignItems: "center",
             }}
           >
             <Text
@@ -956,7 +956,7 @@ export function DatePicker(props: DatePickerProps) {
                   year === calendarData.year
                     ? primaryForegroundColor
                     : textColor,
-                fontWeight: year === calendarData.year ? '600' : '400',
+                fontWeight: year === calendarData.year ? "600" : "400",
                 fontSize: FONT_SIZE,
               }}
             >
@@ -972,47 +972,47 @@ export function DatePicker(props: DatePickerProps) {
     if (showMonthPicker) return renderMonthPicker();
     if (showYearPicker) return renderYearPicker();
 
-    if (mode === 'datetime') {
-      return viewMode === 'date' ? renderCalendar() : renderTimePicker();
+    if (mode === "datetime") {
+      return viewMode === "date" ? renderCalendar() : renderTimePicker();
     }
 
-    if (mode === 'time') return renderTimePicker();
+    if (mode === "time") return renderTimePicker();
     return renderCalendar();
   };
 
   const getBottomSheetTitle = () => {
-    if (showMonthPicker) return 'Select Month';
-    if (showYearPicker) return 'Select Year';
+    if (showMonthPicker) return "选择月份";
+    if (showYearPicker) return "选择年份";
 
-    if (mode === 'datetime') {
-      return viewMode === 'date' ? 'Select Date' : 'Select Time';
+    if (mode === "datetime") {
+      return viewMode === "date" ? "选择日期" : "选择时间";
     }
 
-    if (mode === 'time') return 'Select Time';
+    if (mode === "time") return "选择时间";
 
-    if (mode === 'range') return 'Select Range';
+    if (mode === "range") return "选择范围";
 
-    return 'Select Date';
+    return "Select Date";
   };
 
   const handleOpenPicker = () => {
     setCurrentDate(new Date());
-    setViewMode('date');
+    setViewMode("date");
     setShowMonthPicker(false);
     setShowYearPicker(false);
     open();
   };
 
   const triggerStyle: ViewStyle = {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: variant === 'group' ? 0 : 16,
-    borderWidth: variant === 'group' ? 0 : 1,
-    borderColor: variant === 'outline' ? borderColor : cardColor,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: variant === "group" ? 0 : 16,
+    borderWidth: variant === "group" ? 0 : 1,
+    borderColor: variant === "outline" ? borderColor : cardColor,
     borderRadius: CORNERS,
-    backgroundColor: variant === 'filled' ? cardColor : 'transparent',
-    minHeight: variant === 'group' ? 'auto' : HEIGHT,
+    backgroundColor: variant === "filled" ? cardColor : "transparent",
+    minHeight: variant === "group" ? "auto" : HEIGHT,
   };
 
   return (
@@ -1025,24 +1025,24 @@ export function DatePicker(props: DatePickerProps) {
         <View
           style={{
             flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: "row",
+            alignItems: "center",
             gap: 8,
           }}
         >
           <View
             style={{
-              width: label ? 120 : 'auto',
-              flexDirection: 'row',
-              alignItems: 'center',
+              width: label ? 120 : "auto",
+              flexDirection: "row",
+              alignItems: "center",
               gap: 8,
             }}
           >
-            {mode === 'time' ? (
+            {mode === "time" ? (
               <Icon name={Clock} size={20} strokeWidth={1} />
-            ) : mode === 'datetime' ? (
+            ) : mode === "datetime" ? (
               <Icon name={CalendarClock} size={20} strokeWidth={1} />
-            ) : mode === 'range' ? (
+            ) : mode === "range" ? (
               <Icon name={CalendarRange} size={20} strokeWidth={1} />
             ) : (
               <Icon name={Calendar} size={20} strokeWidth={1} />
@@ -1052,9 +1052,9 @@ export function DatePicker(props: DatePickerProps) {
             {label && (
               <View style={{ flex: 1 }}>
                 <Text
-                  variant='caption'
+                  variant="caption"
                   numberOfLines={1}
-                  ellipsizeMode='tail'
+                  ellipsizeMode="tail"
                   style={[
                     {
                       color: error ? errorColor : textMutedColor,
@@ -1072,7 +1072,7 @@ export function DatePicker(props: DatePickerProps) {
           <View style={{ flex: 1 }}>
             <Text
               numberOfLines={1}
-              ellipsizeMode='tail'
+              ellipsizeMode="tail"
               style={{
                 color: value ? textColor : textMutedColor,
                 fontSize: FONT_SIZE,
@@ -1100,25 +1100,25 @@ export function DatePicker(props: DatePickerProps) {
 
           <View
             style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
               paddingTop: 20,
               gap: 12,
             }}
           >
             <View
               style={{
-                flexDirection: 'row',
+                flexDirection: "row",
                 gap: 8,
               }}
             >
-              <Button variant='outline' onPress={resetToToday}>
-                Today
+              <Button variant="outline" onPress={resetToToday}>
+                今天
               </Button>
 
               <Button
-                variant='outline'
+                variant="outline"
                 onPress={() => {
                   close();
                   setShowMonthPicker(false);
@@ -1126,17 +1126,24 @@ export function DatePicker(props: DatePickerProps) {
                   clearSelection();
                 }}
               >
-                {mode === 'range' ? 'Clear' : 'Cancel'}
+                {mode === "range" ? "清空" : "Cancel"}
               </Button>
             </View>
 
-            {mode === 'datetime' && viewMode === 'date' ? (
-              <Button onPress={() => setViewMode('time')} style={{ flex: 1 }}>
+            {mode === "datetime" && viewMode === "date" ? (
+              <Button onPress={() => setViewMode("time")} style={{ flex: 1 }}>
                 Next
               </Button>
             ) : (
-              <Button onPress={handleConfirm} style={{ flex: 1 }}>
-                Done
+              <Button
+                onPress={handleConfirm}
+                style={{ flex: 1 }}
+                disabled={
+                  mode === "range" &&
+                  (!tempRange.startDate || !tempRange.endDate)
+                }
+              >
+                完成
               </Button>
             )}
           </View>
