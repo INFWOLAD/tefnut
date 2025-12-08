@@ -12,7 +12,7 @@ import AddItem from "@/components/tally/addItem";
 import { Button } from "@/components/ui/button";
 import { useTallyStore } from "@/stores/tally/tally";
 import { ADDITEMS, CREATTABLE, QUERYALL } from "@/utils/tallySQL";
-import DisplayList from "@/components/tally/displayList";
+import DisplayList from "@/components/tally/displayCard";
 import { Card } from "@/components/ui/card";
 
 export default function TallyIndex() {
