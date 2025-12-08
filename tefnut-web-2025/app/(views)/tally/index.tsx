@@ -79,25 +79,25 @@ export default function TallyIndex() {
     >
       <BottomSheet isVisible={addSheet.isVisible} onClose={addSheet.close}>
         <AddItem />
+        <Button
+          onPress={() => {
+            const uuid = Date.now().toString();
+            db.runAsync(sql, [
+              uuid,
+              storeAddItem.bankShort,
+              storeAddItem.startDate,
+              storeAddItem.endDate,
+              storeAddItem.cashRate,
+              storeAddItem.extraRate,
+              storeAddItem.totalRate,
+              storeAddItem.amount,
+              "",
+            ]);
+          }}
+        >
+          添加
+        </Button>
       </BottomSheet>
-      <Button
-        onPress={() => {
-          const uuid = Date.now().toString();
-          db.runAsync(sql, [
-            uuid,
-            storeAddItem.bankShort,
-            storeAddItem.startDate,
-            storeAddItem.endDate,
-            storeAddItem.cashRate,
-            storeAddItem.extraRate,
-            storeAddItem.totalRate,
-            storeAddItem.amount,
-            "",
-          ]);
-        }}
-      >
-        添加
-      </Button>
     </SafeAreaView>
   );
 }
