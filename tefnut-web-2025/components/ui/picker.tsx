@@ -1,11 +1,11 @@
-import { Icon } from '@/components/ui/icon';
-import { ScrollView } from '@/components/ui/scroll-view';
-import { Text } from '@/components/ui/text';
-import { View } from '@/components/ui/view';
-import { useColor } from '@/hooks/useColor';
-import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from '@/theme/globals';
-import { ChevronDown, LucideProps } from 'lucide-react-native';
-import React, { useState } from 'react';
+import { Icon } from "@/components/ui/icon";
+import { ScrollView } from "@/components/ui/scroll-view";
+import { Text } from "@/components/ui/text";
+import { View } from "@/components/ui/view";
+import { useColor } from "@/hooks/useColor";
+import { BORDER_RADIUS, CORNERS, FONT_SIZE, HEIGHT } from "@/theme/globals";
+import { ChevronDown, LucideProps } from "lucide-react-native";
+import React, { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -13,7 +13,8 @@ import {
   TextStyle,
   TouchableOpacity,
   ViewStyle,
-} from 'react-native';
+} from "react-native";
+import { AvoidKeyboard } from "./avoid-keyboard";
 
 export interface PickerOption {
   label: string;
@@ -33,7 +34,7 @@ interface PickerProps {
   value?: string;
   placeholder?: string;
   error?: string;
-  variant?: 'outline' | 'filled' | 'group';
+  variant?: "outline" | "filled" | "group";
   onValueChange?: (value: string) => void;
   disabled?: boolean;
   style?: ViewStyle;
@@ -61,8 +62,8 @@ export function Picker({
   value,
   values = [],
   error,
-  variant = 'filled',
-  placeholder = 'Select an option...',
+  variant = "filled",
+  placeholder = "Select an option...",
   onValueChange,
   onValuesChange,
   disabled = false,
@@ -76,23 +77,23 @@ export function Picker({
   errorStyle,
   modalTitle,
   searchable = false,
-  searchPlaceholder = 'Search options...',
+  searchPlaceholder = "Search options...",
 }: PickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Move ALL theme color hooks to the top level
-  const borderColor = useColor('border');
-  const text = useColor('text');
-  const muted = useColor('mutedForeground');
-  const cardColor = useColor('card');
-  const danger = useColor('red');
-  const accent = useColor('accent');
-  const primary = useColor('primary');
-  const primaryForeground = useColor('primaryForeground');
-  const input = useColor('input');
-  const mutedBg = useColor('muted');
-  const textMutedColor = useColor('textMuted');
+  const borderColor = useColor("border");
+  const text = useColor("text");
+  const muted = useColor("mutedForeground");
+  const cardColor = useColor("card");
+  const danger = useColor("red");
+  const accent = useColor("accent");
+  const primary = useColor("primary");
+  const primaryForeground = useColor("primaryForeground");
+  const input = useColor("input");
+  const mutedBg = useColor("muted");
+  const textMutedColor = useColor("textMuted");
 
   // Normalize data structure - convert options to sections format
   const normalizedSections: PickerSection[] =
@@ -150,15 +151,15 @@ export function Picker({
   };
 
   const triggerStyle: ViewStyle = {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: variant === 'group' ? 0 : 16,
-    borderWidth: variant === 'group' ? 0 : 1,
-    borderColor: variant === 'outline' ? borderColor : cardColor,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: variant === "group" ? 0 : 16,
+    borderWidth: variant === "group" ? 0 : 1,
+    borderColor: variant === "outline" ? borderColor : cardColor,
     borderRadius: CORNERS,
-    backgroundColor: variant === 'filled' ? cardColor : 'transparent',
-    minHeight: variant === 'group' ? 'auto' : HEIGHT,
+    backgroundColor: variant === "filled" ? cardColor : "transparent",
+    minHeight: variant === "group" ? "auto" : HEIGHT,
     opacity: disabled ? 0.5 : 1,
   };
 
@@ -179,37 +180,37 @@ export function Picker({
           paddingVertical: 16,
           paddingHorizontal: 20,
           borderRadius: CORNERS,
-          backgroundColor: isSelected ? primary : 'transparent',
+          backgroundColor: isSelected ? primary : "transparent",
           marginVertical: 2,
-          alignItems: 'center',
+          alignItems: "center",
           opacity: option.disabled ? 0.3 : 1,
         }}
         disabled={option.disabled}
       >
         <View
           style={{
-            width: '100%',
-            alignItems: 'center',
+            width: "100%",
+            alignItems: "center",
           }}
         >
           <Text
             style={{
               color: isSelected ? primaryForeground : text,
-              fontWeight: isSelected ? '600' : '400',
+              fontWeight: isSelected ? "600" : "400",
               fontSize: FONT_SIZE,
-              textAlign: 'center',
+              textAlign: "center",
             }}
           >
             {option.label}
           </Text>
           {option.description && (
             <Text
-              variant='caption'
+              variant="caption"
               style={{
                 marginTop: 4,
                 fontSize: 12,
                 color: isSelected ? primaryForeground : textMutedColor,
-                textAlign: 'center',
+                textAlign: "center",
               }}
             >
               {option.description}
@@ -231,28 +232,28 @@ export function Picker({
         {/* Icon & Label */}
         <View
           style={{
-            width: label ? 128 : 'auto',
-            flexDirection: 'row',
-            alignItems: 'center',
+            width: label ? 128 : "auto",
+            flexDirection: "row",
+            alignItems: "center",
             gap: 8,
           }}
-          pointerEvents='none'
+          pointerEvents="none"
         >
           {icon && (
             <Icon name={icon} size={16} color={error ? danger : muted} />
           )}
           {label && (
             <Text
-              variant='caption'
+              variant="caption"
               numberOfLines={1}
-              ellipsizeMode='tail'
+              ellipsizeMode="tail"
               style={[
                 {
                   color: error ? danger : muted,
                 },
                 labelStyle,
               ]}
-              pointerEvents='none'
+              pointerEvents="none"
             >
               {label}
             </Text>
@@ -262,9 +263,9 @@ export function Picker({
         <View
           style={{
             flex: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
           <Text
@@ -275,21 +276,21 @@ export function Picker({
                   selectedOptions.length > 0
                     ? text
                     : disabled
-                    ? muted
-                    : error
-                    ? danger
-                    : muted,
+                      ? muted
+                      : error
+                        ? danger
+                        : muted,
               },
               inputStyle,
             ]}
             numberOfLines={1}
-            ellipsizeMode='tail'
+            ellipsizeMode="tail"
           >
             {getDisplayText()}
           </Text>
 
           {rightComponent ? (
-            typeof rightComponent === 'function' ? (
+            typeof rightComponent === "function" ? (
               rightComponent()
             ) : (
               rightComponent
@@ -299,7 +300,7 @@ export function Picker({
               size={16}
               color={error ? danger : muted}
               style={{
-                transform: [{ rotate: isOpen ? '180deg' : '0deg' }],
+                transform: [{ rotate: isOpen ? "180deg" : "0deg" }],
               }}
             />
           )}
@@ -309,7 +310,7 @@ export function Picker({
       {/* Error message */}
       {error && (
         <Text
-          variant='caption'
+          variant="caption"
           style={[
             {
               color: danger,
@@ -325,15 +326,15 @@ export function Picker({
       <Modal
         visible={isOpen}
         transparent
-        animationType='fade'
+        animationType="fade"
         onRequestClose={() => setIsOpen(false)}
       >
         <Pressable
           style={{
             flex: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            justifyContent: 'flex-end',
-            alignItems: 'center',
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "flex-end",
+            alignItems: "center",
           }}
           onPress={() => setIsOpen(false)}
         >
@@ -342,10 +343,10 @@ export function Picker({
               backgroundColor: cardColor,
               borderTopStartRadius: BORDER_RADIUS,
               borderTopEndRadius: BORDER_RADIUS,
-              maxHeight: '70%',
-              width: '100%',
+              maxHeight: "70%",
+              width: "100%",
               paddingBottom: 32,
-              overflow: 'hidden',
+              overflow: "hidden",
             }}
             onPress={(e) => e.stopPropagation()}
           >
@@ -356,19 +357,19 @@ export function Picker({
                   padding: 16,
                   borderBottomWidth: 1,
                   borderBottomColor: borderColor,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <Text variant='title'>{modalTitle || 'Select Options'}</Text>
+                <Text variant="title">{modalTitle || "Select Options"}</Text>
 
                 {multiple && (
                   <TouchableOpacity onPress={() => setIsOpen(false)}>
                     <Text
                       style={{
                         color: primary,
-                        fontWeight: '500',
+                        fontWeight: "500",
                       }}
                     >
                       Done
@@ -425,12 +426,12 @@ export function Picker({
                         }}
                       >
                         <Text
-                          variant='caption'
+                          variant="caption"
                           style={{
-                            fontWeight: '600',
+                            fontWeight: "600",
                             color: textMutedColor,
                             fontSize: 12,
-                            textTransform: 'uppercase',
+                            textTransform: "uppercase",
                             letterSpacing: 0.5,
                           }}
                         >
@@ -451,23 +452,24 @@ export function Picker({
                     style={{
                       paddingHorizontal: 16,
                       paddingVertical: 24,
-                      alignItems: 'center',
+                      alignItems: "center",
                     }}
                   >
                     <Text
-                      variant='caption'
+                      variant="caption"
                       style={{
                         color: textMutedColor,
                       }}
                     >
                       {searchQuery
-                        ? 'No results found'
-                        : 'No options available'}
+                        ? "No results found"
+                        : "No options available"}
                     </Text>
                   </View>
                 )}
               </ScrollView>
             </View>
+            <AvoidKeyboard />
           </Pressable>
         </Pressable>
       </Modal>

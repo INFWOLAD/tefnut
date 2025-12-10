@@ -1,15 +1,16 @@
-import { bankCodeTrans } from "@/utils/tallyBankCode";
+import { bankCodeTrans, bankPhotoTrans } from "@/utils/tallyBankCode";
 import { Card, CardContent } from "../ui/card";
 import { Text } from "../ui/text";
 import { View } from "../ui/view";
 import { useEffect } from "react";
 import { Progress } from "../ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-interface DisplayListProps {
+interface DisplayCardProps {
   item: any;
 }
 
-export default function DisplayList({ item }: DisplayListProps) {
+export default function DisplayCard({ item }: DisplayCardProps) {
   useEffect(() => {
     console.log("DisplayList item:", item);
     console.log("Date", new Date().toString());
@@ -21,11 +22,12 @@ export default function DisplayList({ item }: DisplayListProps) {
     const now = new Date();
 
     if (end < now) {
-      return 1;
+      return 100;
     } else {
-      return (
-        (now.getTime() - start.getTime()) / (end.getTime() - start.getTime())
-      );
+      const percent =
+        (now.getTime() - start.getTime()) / (end.getTime() - start.getTime());
+      console.log("dateProcess:", percent);
+      return percent * 100;
     }
   }
 
@@ -33,10 +35,36 @@ export default function DisplayList({ item }: DisplayListProps) {
     <>
       <CardContent>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <Text style={{ marginBottom: 8, fontWeight: "600" }}>
-            {bankCodeTrans(item.bankShort)}
+          <View
+            style={{ flexDirection: "row", alignItems: "center", height: 32 }}
+          >
+            <Avatar size={24}>
+              <AvatarImage
+                source={{
+                  uri: bankPhotoTrans(item.bankShort),
+                }}
+              />
+              <AvatarFallback>{item.bankShort}</AvatarFallback>
+            </Avatar>
+            <Text
+              style={{
+                fontWeight: "600",
+                marginLeft: 8,
+                lineHeight: 32,
+              }}
+            >
+              {bankCodeTrans(item.bankShort)}
+            </Text>
+          </View>
+          <Text
+            style={{
+              fontWeight: "600",
+              marginLeft: 8,
+              lineHeight: 32,
+            }}
+          >
+            ￥{item.amount}
           </Text>
-          <Text>￥{item.amount}</Text>
         </View>
         <View
           style={{

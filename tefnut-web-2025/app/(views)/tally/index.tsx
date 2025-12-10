@@ -2,7 +2,7 @@ import { Icon } from "@/components/ui/icon";
 import { Link } from "@/components/ui/link";
 import { Text } from "@/components/ui/text";
 import { router, useNavigation } from "expo-router";
-import { Compass, Plus } from "lucide-react-native";
+import { Compass, ListOrdered, Plus } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Platform, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,6 +14,8 @@ import { useTallyStore } from "@/stores/tally/tally";
 import { ADDITEMS, CREATTABLE, QUERYALL } from "@/utils/tallySQL";
 import DisplayList from "@/components/tally/displayCard";
 import { Card } from "@/components/ui/card";
+import DisplayCard from "@/components/tally/displayCard";
+import { ActionSheet } from "@/components/ui/action-sheet";
 
 export default function TallyIndex() {
   const navigator = useNavigation();
@@ -23,6 +25,48 @@ export default function TallyIndex() {
   const storeSaveAddItem = useTallyStore((state) => state.saveAddItem);
   const storeClearAddItem = useTallyStore((state) => state.clearAddItem);
   const [itemsList, setItemsList] = useState<any[]>([]);
+  const [actionSheetVisible, setActionSheetVisible] = useState(false);
+
+  const orderOptions = [
+    {
+      title: "银行",
+      onPress: () => {
+        setItemsList(
+          itemsList.sort((a, b) => {
+            return a.bankShort.localeCompare(b.bankShort);
+          })
+        );
+        setActionSheetVisible(false);
+      },
+    },
+    {
+      title: "利率",
+      onPress: () => {
+        itemsList.sort((a, b) => {
+          return b.totalRate - a.totalRate;
+        });
+        setActionSheetVisible(false);
+      },
+    },
+    {
+      title: "到期时间",
+      onPress: () => {
+        itemsList.sort((a, b) => {
+          return a.endDate - b.endDate;
+        });
+        setActionSheetVisible(false);
+      },
+    },
+    {
+      title: "金额",
+      onPress: () => {
+        itemsList.sort((a, b) => {
+          return b.amount - a.amount;
+        });
+        setActionSheetVisible(false);
+      },
+    },
+  ];
 
   useEffect(() => {
     (async () => {
@@ -32,6 +76,23 @@ export default function TallyIndex() {
         headerRight: () => {
           return (
             <>
+              {/* 添加 */}
+              <Pressable
+                onPress={() => {
+                  setActionSheetVisible(true);
+                }}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                android_ripple={{ color: "rgba(0,0,0,0.08)" }}
+                style={{
+                  padding: 6,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 20,
+                }}
+              >
+                <Icon name={ListOrdered} size={24} />
+              </Pressable>
               {/* 添加 */}
               <Pressable
                 onPress={() => {
@@ -61,20 +122,30 @@ export default function TallyIndex() {
     setItemsList(data);
   }
 
-  useEffect(() => {}, []);
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
-      style={{ flex: 1, paddingTop: 50, paddingHorizontal: 20 }}
+      style={{ flex: 1, paddingTop: 60, paddingHorizontal: 20 }}
     >
       {itemsList.map((item) => (
         <Card key={item.uuid} style={{ marginBottom: 12 }}>
-          <DisplayList item={item} />
+          <DisplayCard item={item} />
         </Card>
       ))}
+      <ActionSheet
+        visible={actionSheetVisible}
+        onClose={() => setActionSheetVisible(false)}
+        title="选择排序方式"
+        message=""
+        options={orderOptions}
+      />
       <BottomSheet
         isVisible={addSheet.isVisible}
-        onClose={addSheet.close}
+        onClose={async () => {
+          addSheet.close();
+          !storeSaveAddItem && storeClearAddItem();
+          await refreshList();
+        }}
         snapPoints={[0.6]}
       >
         <AddItem />
@@ -93,9 +164,9 @@ export default function TallyIndex() {
               storeAddItem.amount,
               "",
             ]);
+            addSheet.close();
             !storeSaveAddItem && storeClearAddItem();
             await refreshList();
-            addSheet.close();
           }}
           style={{ marginTop: 16 }}
           disabled={

@@ -11,7 +11,8 @@ import {
   SquarePercent,
   TicketPercent,
 } from "lucide-react-native";
-import { bankCode } from "@/utils/tallyBankCode";
+import { bankInfo } from "@/utils/tallyBankCode";
+import BigNumber from "bignumber.js";
 
 export default function AddItem() {
   const storeAddItem = useTallyStore((state) => state.addItems);
@@ -20,8 +21,8 @@ export default function AddItem() {
   const setStoreAddItem = useTallyStore((state) => state.setAddItem);
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const bankOptions = Object.entries(bankCode).map(([code, name]) => ({
-    label: name,
+  const bankOptions = Object.entries(bankInfo).map(([code, info]) => ({
+    label: info.name,
     value: code,
   }));
 
@@ -40,6 +41,18 @@ export default function AddItem() {
       });
     }
   }, [dateRange]);
+
+  useEffect(() => {
+    if (storeAddItem.extraRate && storeAddItem.cashRate) {
+      const total = BigNumber(storeAddItem.extraRate).plus(
+        storeAddItem.cashRate
+      );
+      setStoreAddItem({
+        ...storeAddItem,
+        totalRate: total.toString(),
+      });
+    }
+  }, [storeAddItem.extraRate, storeAddItem.cashRate]);
 
   return (
     <>
