@@ -29,3 +29,7 @@ CREATE TABLE IF NOT EXISTS tallyDetail (
 export const QUERYALL = `
 SELECT * FROM tallyDetail;
 `;
+
+export const DELETEITEM = `
+DELETE FROM tallyDetail WHERE uuid = ?;
+`;

@@ -11,21 +11,24 @@ import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
 import AddItem from "@/components/tally/addItem";
 import { Button } from "@/components/ui/button";
 import { useTallyStore } from "@/stores/tally/tally";
-import { ADDITEMS, CREATTABLE, QUERYALL } from "@/utils/tallySQL";
+import { ADDITEMS, CREATTABLE, DELETEITEM, QUERYALL } from "@/utils/tallySQL";
 import DisplayList from "@/components/tally/displayCard";
 import { Card } from "@/components/ui/card";
 import DisplayCard from "@/components/tally/displayCard";
 import { ActionSheet } from "@/components/ui/action-sheet";
+import DisPlaySheet from "@/components/tally/displaySheet";
 
 export default function TallyIndex() {
   const navigator = useNavigation();
   const db = SQLite.openDatabaseSync("app.db");
   const addSheet = useBottomSheet();
+  const infoSheet = useBottomSheet();
   const storeAddItem = useTallyStore((state) => state.addItems);
   const storeSaveAddItem = useTallyStore((state) => state.saveAddItem);
   const storeClearAddItem = useTallyStore((state) => state.clearAddItem);
   const [itemsList, setItemsList] = useState<any[]>([]);
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
+  const [operatingItem, setOperatingItem] = useState<any>({});
 
   const orderOptions = [
     {
@@ -76,7 +79,7 @@ export default function TallyIndex() {
         headerRight: () => {
           return (
             <>
-              {/* 添加 */}
+              {/* 排序 */}
               <Pressable
                 onPress={() => {
                   setActionSheetVisible(true);
@@ -129,7 +132,14 @@ export default function TallyIndex() {
     >
       {itemsList.map((item) => (
         <Card key={item.uuid} style={{ marginBottom: 12 }}>
-          <DisplayCard item={item} />
+          <Pressable
+            onPress={() => {
+              setOperatingItem(item);
+              infoSheet.open();
+            }}
+          >
+            <DisplayCard item={item} />
+          </Pressable>
         </Card>
       ))}
       <ActionSheet
@@ -139,6 +149,28 @@ export default function TallyIndex() {
         message=""
         options={orderOptions}
       />
+      {/* 存单详情 */}
+      <BottomSheet
+        isVisible={infoSheet.isVisible}
+        onClose={async () => {
+          infoSheet.close();
+        }}
+        snapPoints={[0.5]}
+      >
+        <DisPlaySheet item={operatingItem} />
+        <Button
+          onPress={async () => {
+            await db.runAsync(DELETEITEM, [operatingItem.uuid]);
+            infoSheet.close();
+            await refreshList();
+          }}
+          style={{ marginTop: 16 }}
+          variant="destructive"
+        >
+          删除
+        </Button>
+      </BottomSheet>
+      {/* 存单添加 */}
       <BottomSheet
         isVisible={addSheet.isVisible}
         onClose={async () => {
