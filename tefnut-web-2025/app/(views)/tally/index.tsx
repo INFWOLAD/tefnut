@@ -1,10 +1,8 @@
 import { Icon } from "@/components/ui/icon";
-import { Link } from "@/components/ui/link";
-import { Text } from "@/components/ui/text";
-import { router, useNavigation } from "expo-router";
-import { Compass, ListOrdered, Plus } from "lucide-react-native";
+import { useNavigation } from "expo-router";
+import { ListOrdered, Plus } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { Platform, Pressable } from "react-native";
+import { Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as SQLite from "expo-sqlite";
 import { useBottomSheet, BottomSheet } from "@/components/ui/bottom-sheet";
@@ -12,11 +10,11 @@ import AddItem from "@/components/tally/addItem";
 import { Button } from "@/components/ui/button";
 import { useTallyStore } from "@/stores/tally/tally";
 import { ADDITEMS, CREATTABLE, DELETEITEM, QUERYALL } from "@/utils/tallySQL";
-import DisplayList from "@/components/tally/displayCard";
 import { Card } from "@/components/ui/card";
 import DisplayCard from "@/components/tally/displayCard";
 import { ActionSheet } from "@/components/ui/action-sheet";
 import DisPlaySheet from "@/components/tally/displaySheet";
+import { ScrollView } from "@/components/ui/scroll-view";
 
 export default function TallyIndex() {
   const navigator = useNavigation();
@@ -130,18 +128,21 @@ export default function TallyIndex() {
       edges={["top", "left", "right"]}
       style={{ flex: 1, paddingTop: 60, paddingHorizontal: 20 }}
     >
-      {itemsList.map((item) => (
-        <Card key={item.uuid} style={{ marginBottom: 12 }}>
-          <Pressable
-            onPress={() => {
-              setOperatingItem(item);
-              infoSheet.open();
-            }}
-          >
-            <DisplayCard item={item} />
-          </Pressable>
-        </Card>
-      ))}
+      <ScrollView style={{ flex: 1 }}>
+        {itemsList.map((item) => (
+          <Card key={item.uuid} style={{ marginBottom: 12 }}>
+            <Pressable
+              onPress={() => {
+                setOperatingItem(item);
+                infoSheet.open();
+              }}
+            >
+              <DisplayCard item={item} />
+            </Pressable>
+          </Card>
+        ))}
+      </ScrollView>
+      {/* 排序方式 */}
       <ActionSheet
         visible={actionSheetVisible}
         onClose={() => setActionSheetVisible(false)}

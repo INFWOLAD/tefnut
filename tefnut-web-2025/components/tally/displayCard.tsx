@@ -26,7 +26,7 @@ export default function DisplayCard({ item }: DisplayCardProps) {
     } else {
       const percent =
         (now.getTime() - start.getTime()) / (end.getTime() - start.getTime());
-      console.log("dateProcess:", percent);
+      // console.log("dateProcess:", percent);
       return percent * 100;
     }
   }
