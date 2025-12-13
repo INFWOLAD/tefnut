@@ -13,6 +13,7 @@ config({
 export default ({ config: appConfig }: ConfigContext) => ({
   ...appConfig,
   extra: {
+    ...appConfig.extra,
     APP_ENV: ENV,
     // API_URL: process.env.API_URL,
   },
