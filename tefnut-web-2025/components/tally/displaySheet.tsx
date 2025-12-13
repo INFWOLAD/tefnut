@@ -1,7 +1,7 @@
 import { bankCodeTrans } from "@/utils/tallyBankCode";
-import { View } from "../ui/view";
-import { Text } from "../ui/text";
-import { ScrollView } from "../ui/scroll-view";
+import { View } from "@/components/ui/view";
+import { Text } from "@/components/ui/text";
+import { ScrollView } from "@/components/ui/scroll-view";
 
 interface DisPlaySheetProps {
   item: any;

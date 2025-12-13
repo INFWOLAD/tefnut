@@ -15,6 +15,7 @@ import DisplayCard from "@/components/tally/displayCard";
 import { ActionSheet } from "@/components/ui/action-sheet";
 import DisPlaySheet from "@/components/tally/displaySheet";
 import { ScrollView } from "@/components/ui/scroll-view";
+import { Platform } from "react-native";
 
 export default function TallyIndex() {
   const navigator = useNavigation();
@@ -126,7 +127,11 @@ export default function TallyIndex() {
   return (
     <SafeAreaView
       edges={["top", "left", "right"]}
-      style={{ flex: 1, paddingTop: 60, paddingHorizontal: 20 }}
+      style={{
+        flex: 1,
+        paddingTop: Platform.OS === "android" ? 0 : 60,
+        paddingHorizontal: 20,
+      }}
     >
       <ScrollView style={{ flex: 1 }}>
         {itemsList.map((item) => (
