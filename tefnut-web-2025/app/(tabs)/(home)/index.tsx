@@ -5,10 +5,10 @@ import { useColor } from "@/hooks/useColor";
 import { useRouter } from "expo-router";
 import { useStore as useBtStore } from "@/stores/bt/btInfo";
 import { showSuccessAlert } from "@/components/ui/alert";
+import Constants from "expo-constants";
 
 export default function HomeScreen() {
-  const green = useColor("green");
-  const muted = useColor("muted");
+  const env = Constants.expoConfig?.extra?.APP_ENV;
   const router = useRouter();
   const btloginfo = useBtStore();
   return (
@@ -26,7 +26,7 @@ export default function HomeScreen() {
           textAlign: "center",
         }}
       >
-        Tefnut (Beta)
+        Tefnut ({(env !== "production" && env) || "Beta"})
       </Text>
 
       {/* <Link asChild href="/sheet">
@@ -45,6 +45,14 @@ export default function HomeScreen() {
         }}
       >
         QBittorrent管理
+      </Button>
+      <Button
+        onPress={() => {
+          console.log("Navigating to /tally/index");
+          router.push("/tally");
+        }}
+      >
+        账单管理
       </Button>
     </View>
   );
