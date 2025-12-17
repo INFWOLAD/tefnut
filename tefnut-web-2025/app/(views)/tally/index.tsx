@@ -1,7 +1,7 @@
 import { Icon } from "@/components/ui/icon";
 import { useNavigation } from "expo-router";
 import { ListOrdered, Plus } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as SQLite from "expo-sqlite";
@@ -26,8 +26,7 @@ import { Platform } from "react-native";
 export default function TallyIndex() {
   const navigator = useNavigation();
   const db = SQLite.openDatabaseSync("app.db");
-  const addSheet = useBottomSheet();
-  const infoSheet = useBottomSheet();
+  const bottomSheet = useBottomSheet();
   const safeInsets = useSafeAreaInsets();
   const storeAddItem = useTallyStore((state) => state.addItems);
   const setStoreAddItem = useTallyStore((state) => state.setAddItem);
@@ -35,7 +34,9 @@ export default function TallyIndex() {
   const [itemsList, setItemsList] = useState<any[]>([]);
   const [actionSheetVisible, setActionSheetVisible] = useState(false);
   const [modifyFlag, setModifyFlag] = useState(false);
+  const [sheetMode, setSheetMode] = useState<"add" | "info">("add");
   const [operatingItem, setOperatingItem] = useState<any>({});
+  const [latestItemUUID, setLatestItemUUID] = useState<string>("");
 
   const orderOptions = [
     {
@@ -106,7 +107,8 @@ export default function TallyIndex() {
               {/* 添加 */}
               <Pressable
                 onPress={() => {
-                  addSheet.open();
+                  setSheetMode("add");
+                  bottomSheet.open();
                 }}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 accessibilityRole="button"
@@ -127,6 +129,15 @@ export default function TallyIndex() {
     })();
   }, []);
 
+  useEffect(() => {
+    if (latestItemUUID) {
+      const timer = setTimeout(() => {
+        setLatestItemUUID("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [latestItemUUID]);
+
   async function refreshList() {
     const data = await db.getAllAsync(QUERYALL);
     setItemsList(data);
@@ -146,10 +157,11 @@ export default function TallyIndex() {
             <Pressable
               onPress={() => {
                 setOperatingItem(item);
-                infoSheet.open();
+                setSheetMode("info");
+                bottomSheet.open();
               }}
             >
-              <DisplayCard item={item} />
+              <DisplayCard item={item} latestUUID={latestItemUUID} />
             </Pressable>
           </Card>
         ))}
@@ -164,128 +176,125 @@ export default function TallyIndex() {
       />
       {/* 存单详情 */}
       <BottomSheet
-        isVisible={infoSheet.isVisible}
+        isVisible={bottomSheet.isVisible}
         onClose={async () => {
-          infoSheet.close();
-        }}
-        snapPoints={[0.6]}
-      >
-        <DisPlaySheet item={operatingItem} />
-        <Button
-          onPress={async () => {
-            const uuid = Date.now().toString();
-            console.log("添加存单：", operatingItem);
-            await db.runAsync(ADDITEMS, [
-              uuid,
-              operatingItem.bankShort,
-              operatingItem.startDate,
-              operatingItem.endDate,
-              operatingItem.cashRate,
-              operatingItem.extraRate,
-              operatingItem.totalRate,
-              operatingItem.amount,
-              "",
-            ]);
-            infoSheet.close();
+          bottomSheet.close();
+          if (sheetMode === "add") {
+            storeClearAddItem();
             await refreshList();
-          }}
-          style={{ marginTop: 16 }}
-          variant="outline"
-        >
-          复制
-        </Button>
-        <Button
-          onPress={async () => {
-            setStoreAddItem(operatingItem);
-            setModifyFlag(true);
-            infoSheet.close();
-            addSheet.open();
-          }}
-          style={{ marginTop: 16 }}
-          variant="default"
-        >
-          修改
-        </Button>
-        <Button
-          onPress={async () => {
-            await db.runAsync(DELETEITEM, [operatingItem.uuid]);
-            infoSheet.close();
-            await refreshList();
-          }}
-          style={{ marginTop: 16 }}
-          variant="destructive"
-        >
-          删除
-        </Button>
-      </BottomSheet>
-      {/* 存单添加 */}
-      <BottomSheet
-        isVisible={addSheet.isVisible}
-        onClose={async () => {
-          addSheet.close();
-          storeClearAddItem();
-          await refreshList();
+          }
+          setModifyFlag(false);
         }}
-        snapPoints={[0.6]}
+        snapPoints={sheetMode === "info" ? [0.6] : [0.5]}
       >
-        <AddItem />
-        {modifyFlag ? (
-          <Button
-            onPress={async () => {
-              console.log("修改存单：", storeAddItem);
-              await db.runAsync(UPDATEITEMS, [
-                storeAddItem.bankShort,
-                storeAddItem.startDate,
-                storeAddItem.endDate,
-                storeAddItem.cashRate,
-                storeAddItem.extraRate,
-                storeAddItem.totalRate,
-                storeAddItem.amount,
-                "",
-                storeAddItem.uuid,
-              ]);
-              addSheet.close();
-              storeClearAddItem();
-              setModifyFlag(false);
-              await refreshList();
-            }}
-            style={{ marginTop: 16 }}
-          >
-            修改
-          </Button>
-        ) : (
-          <Button
-            onPress={async () => {
-              const uuid = Date.now().toString();
-              console.log("添加存单：", storeAddItem);
-              await db.runAsync(ADDITEMS, [
-                uuid,
-                storeAddItem.bankShort,
-                storeAddItem.startDate,
-                storeAddItem.endDate,
-                storeAddItem.cashRate,
-                storeAddItem.extraRate,
-                storeAddItem.totalRate,
-                storeAddItem.amount,
-                "",
-              ]);
-              addSheet.close();
-              storeClearAddItem();
-              await refreshList();
-            }}
-            style={{ marginTop: 16 }}
-            disabled={
-              !storeAddItem.bankShort ||
-              !storeAddItem.amount ||
-              !storeAddItem.startDate ||
-              !storeAddItem.endDate ||
-              !storeAddItem.totalRate ||
-              !storeAddItem.cashRate ||
-              !storeAddItem.extraRate
-            }
-          >
-            添加
-          </Button>
+        {sheetMode === "info" && (
+          <>
+            <DisPlaySheet item={operatingItem} />
+            <Button
+              onPress={async () => {
+                const uuid = Date.now().toString();
+                console.log("添加存单：", operatingItem);
+                await db.runAsync(ADDITEMS, [
+                  uuid,
+                  operatingItem.bankShort,
+                  operatingItem.startDate,
+                  operatingItem.endDate,
+                  operatingItem.cashRate,
+                  operatingItem.extraRate,
+                  operatingItem.totalRate,
+                  operatingItem.amount,
+                  "",
+                ]);
+                setLatestItemUUID(uuid);
+                bottomSheet.close();
+                await refreshList();
+              }}
+              style={{ marginTop: 16 }}
+              variant="outline"
+            >
+              复制
+            </Button>
+            <Button
+              onPress={async () => {
+                setStoreAddItem(operatingItem);
+                setModifyFlag(true);
+                setSheetMode("add");
+              }}
+              style={{ marginTop: 16 }}
+              variant="default"
+            >
+              修改
+            </Button>
+            <Button
+              onPress={async () => {
+                await db.runAsync(DELETEITEM, [operatingItem.uuid]);
+                bottomSheet.close();
+                await refreshList();
+              }}
+              style={{ marginTop: 16 }}
+              variant="destructive"
+            >
+              删除
+            </Button>
+          </>
+        )}
+
+        {/* 存单添加 */}
+        {sheetMode === "add" && (
+          <>
+            <AddItem />
+            {modifyFlag ? (
+              <Button
+                onPress={async () => {
+                  console.log("修改存单：", storeAddItem);
+                  await db.runAsync(UPDATEITEMS, [
+                    storeAddItem.bankShort,
+                    storeAddItem.startDate,
+                    storeAddItem.endDate,
+                    storeAddItem.cashRate,
+                    storeAddItem.extraRate,
+                    storeAddItem.totalRate,
+                    storeAddItem.amount,
+                    "",
+                    storeAddItem.uuid,
+                  ]);
+                  bottomSheet.close();
+                  storeClearAddItem();
+                  setModifyFlag(false);
+                  setLatestItemUUID(storeAddItem.uuid);
+                  await refreshList();
+                }}
+                style={{ marginTop: 16 }}
+              >
+                修改
+              </Button>
+            ) : (
+              <Button
+                onPress={async () => {
+                  const uuid = Date.now().toString();
+                  console.log("添加存单：", storeAddItem);
+                  await db.runAsync(ADDITEMS, [
+                    uuid,
+                    storeAddItem.bankShort,
+                    storeAddItem.startDate,
+                    storeAddItem.endDate,
+                    storeAddItem.cashRate,
+                    storeAddItem.extraRate,
+                    storeAddItem.totalRate,
+                    storeAddItem.amount,
+                    "",
+                  ]);
+                  bottomSheet.close();
+                  setLatestItemUUID(uuid);
+                  storeClearAddItem();
+                  await refreshList();
+                }}
+                style={{ marginTop: 16 }}
+              >
+                添加
+              </Button>
+            )}
+          </>
         )}
       </BottomSheet>
     </>

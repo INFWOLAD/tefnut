@@ -25,14 +25,19 @@ export default function AddItem() {
   }));
 
   useEffect(() => {
+    console.log(
+      "item date info:",
+      storeAddItem.startDate,
+      storeAddItem.endDate
+    );
     // 拉起页面时初始化库表中时间戳，反显用户YYYYMMDD
     if (storeAddItem.startDate) {
-      const date = new Date(storeAddItem.startDate);
+      const date = new Date(Number(storeAddItem.startDate));
       const formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
       setDateStartText(formattedDate);
     }
     if (storeAddItem.endDate) {
-      const date = new Date(storeAddItem.endDate);
+      const date = new Date(Number(storeAddItem.endDate));
       const formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
       setDateEndText(formattedDate);
     }

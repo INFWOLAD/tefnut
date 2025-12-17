@@ -5,12 +5,14 @@ import { View } from "../ui/view";
 import { useEffect } from "react";
 import { Progress } from "../ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Badge } from "../ui/badge";
 
 interface DisplayCardProps {
   item: any;
+  latestUUID?: string;
 }
 
-export default function DisplayCard({ item }: DisplayCardProps) {
+export default function DisplayCard({ item, latestUUID }: DisplayCardProps) {
   useEffect(() => {
     console.log("DisplayList item:", item);
     console.log("Date", new Date().toString());
@@ -55,6 +57,19 @@ export default function DisplayCard({ item }: DisplayCardProps) {
             >
               {bankCodeTrans(item.bankShort)}
             </Text>
+            {latestUUID === item.uuid && (
+              <Badge
+                style={{
+                  height: 18,
+                  paddingHorizontal: 6,
+                  paddingVertical: 0,
+                  marginLeft: 6,
+                }}
+                textStyle={{ fontSize: 10 }}
+              >
+                NEW
+              </Badge>
+            )}
           </View>
           <Text
             style={{
