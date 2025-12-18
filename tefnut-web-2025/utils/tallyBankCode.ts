@@ -2,7 +2,7 @@ export const bankInfo: Record<string, { name: string; photo: string }> = {
   ICBC: {
     name: "中国工商银行",
     photo:
-      "https://ts3.tc.mm.bing.net/th/id/ODF.vpdh8WLb4K4MC1J4SWfR1w?w=32&h=32&qlt=91&pcl=fffffa&o=6&cb=ucfimg1&pid=1.2&ucfimg=1",
+      "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/9f/79/56/9f7956da-fb49-e904-16a9-cc870f8651db/AppIcon-1x_U007emarketing-0-11-0-0-sRGB-85-220-0.png/200x200ia-75.webp",
   },
   ABC: {
     name: "中国农业银行",

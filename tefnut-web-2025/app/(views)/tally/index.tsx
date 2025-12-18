@@ -143,6 +143,32 @@ export default function TallyIndex() {
     setItemsList(data);
   }
 
+  // sheet内添加或修改存单
+  async function itemDAO(item: any, action: "add" | "update") {
+    const commonParams = [
+      item.bankShort,
+      item.startDate,
+      item.endDate,
+      item.cashRate,
+      item.extraRate,
+      item.totalRate,
+      item.amount,
+      "",
+    ];
+    if (action === "add") {
+      const uuid = Date.now().toString();
+      setLatestItemUUID(uuid);
+      await db.runAsync(ADDITEMS, [uuid, ...commonParams]);
+    } else {
+      setLatestItemUUID(item.uuid);
+      await db.runAsync(UPDATEITEMS, [...commonParams, item.uuid]);
+    }
+    bottomSheet.close();
+    storeClearAddItem();
+    setModifyFlag(false);
+    await refreshList();
+  }
+
   return (
     <>
       <ScrollView
@@ -185,29 +211,15 @@ export default function TallyIndex() {
           }
           setModifyFlag(false);
         }}
-        snapPoints={sheetMode === "info" ? [0.6] : [0.5]}
+        snapPoints={sheetMode === "info" ? [0.7] : [0.5]}
       >
         {sheetMode === "info" && (
           <>
             <DisPlaySheet item={operatingItem} />
             <Button
               onPress={async () => {
-                const uuid = Date.now().toString();
                 console.log("添加存单：", operatingItem);
-                await db.runAsync(ADDITEMS, [
-                  uuid,
-                  operatingItem.bankShort,
-                  operatingItem.startDate,
-                  operatingItem.endDate,
-                  operatingItem.cashRate,
-                  operatingItem.extraRate,
-                  operatingItem.totalRate,
-                  operatingItem.amount,
-                  "",
-                ]);
-                setLatestItemUUID(uuid);
-                bottomSheet.close();
-                await refreshList();
+                await itemDAO(operatingItem, "add");
               }}
               style={{ marginTop: 16 }}
               variant="outline"
@@ -247,22 +259,7 @@ export default function TallyIndex() {
               <Button
                 onPress={async () => {
                   console.log("修改存单：", storeAddItem);
-                  await db.runAsync(UPDATEITEMS, [
-                    storeAddItem.bankShort,
-                    storeAddItem.startDate,
-                    storeAddItem.endDate,
-                    storeAddItem.cashRate,
-                    storeAddItem.extraRate,
-                    storeAddItem.totalRate,
-                    storeAddItem.amount,
-                    "",
-                    storeAddItem.uuid,
-                  ]);
-                  bottomSheet.close();
-                  storeClearAddItem();
-                  setModifyFlag(false);
-                  setLatestItemUUID(storeAddItem.uuid);
-                  await refreshList();
+                  await itemDAO(storeAddItem, "update");
                 }}
                 style={{ marginTop: 16 }}
               >
@@ -271,23 +268,8 @@ export default function TallyIndex() {
             ) : (
               <Button
                 onPress={async () => {
-                  const uuid = Date.now().toString();
                   console.log("添加存单：", storeAddItem);
-                  await db.runAsync(ADDITEMS, [
-                    uuid,
-                    storeAddItem.bankShort,
-                    storeAddItem.startDate,
-                    storeAddItem.endDate,
-                    storeAddItem.cashRate,
-                    storeAddItem.extraRate,
-                    storeAddItem.totalRate,
-                    storeAddItem.amount,
-                    "",
-                  ]);
-                  bottomSheet.close();
-                  setLatestItemUUID(uuid);
-                  storeClearAddItem();
-                  await refreshList();
+                  await itemDAO(storeAddItem, "add");
                 }}
                 style={{ marginTop: 16 }}
               >
