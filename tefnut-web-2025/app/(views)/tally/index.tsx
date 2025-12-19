@@ -1,6 +1,6 @@
 import { Icon } from "@/components/ui/icon";
-import { useNavigation } from "expo-router";
-import { ListOrdered, Plus } from "lucide-react-native";
+import { router, useNavigation } from "expo-router";
+import { ChartPie, ListOrdered, Plus } from "lucide-react-native";
 import { use, useEffect, useState } from "react";
 import { Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,11 +10,11 @@ import AddItem from "@/components/tally/addItem";
 import { Button } from "@/components/ui/button";
 import { useTallyStore } from "@/stores/tally/tally";
 import {
-  ADDITEMS,
-  CREATTABLE,
-  DELETEITEM,
-  QUERYALL,
-  UPDATEITEMS,
+  ADD_ITEMS,
+  CREATE_TABLE,
+  DELETE_ITEM,
+  QUERY_ALL,
+  UPDATE_ITEMS,
 } from "@/utils/tallySQL";
 import { Card } from "@/components/ui/card";
 import DisplayCard from "@/components/tally/displayCard";
@@ -22,6 +22,7 @@ import { ActionSheet } from "@/components/ui/action-sheet";
 import DisPlaySheet from "@/components/tally/displaySheet";
 import { ScrollView } from "@/components/ui/scroll-view";
 import { Platform } from "react-native";
+import { Link } from "@/components/ui/link";
 
 export default function TallyIndex() {
   const navigator = useNavigation();
@@ -82,11 +83,44 @@ export default function TallyIndex() {
   useEffect(() => {
     (async () => {
       // 初始建表
-      await db.execAsync(CREATTABLE);
+      await db.execAsync(CREATE_TABLE);
       navigator.setOptions({
         headerRight: () => {
           return (
             <>
+              {/* 浏览器页 */}
+              {Platform.OS === "android" ? (
+                <Pressable
+                  onPress={() => {
+                    router.push("/tally/tallyChart");
+                  }}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  android_ripple={{ color: "rgba(0,0,0,0.08)" }}
+                  style={{
+                    padding: 6,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: 20,
+                  }}
+                >
+                  <Icon name={ChartPie} size={24} />
+                </Pressable>
+              ) : (
+                <Link
+                  href="/tally/tallyChart"
+                  style={{
+                    padding: 6,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: 20,
+                    marginLeft: 8,
+                  }}
+                  asChild
+                >
+                  <Icon name={ChartPie} size={24} />
+                </Link>
+              )}
               {/* 排序 */}
               <Pressable
                 onPress={() => {
@@ -139,7 +173,7 @@ export default function TallyIndex() {
   }, [latestItemUUID]);
 
   async function refreshList() {
-    const data = await db.getAllAsync(QUERYALL);
+    const data = await db.getAllAsync(QUERY_ALL);
     setItemsList(data);
   }
 
@@ -158,10 +192,10 @@ export default function TallyIndex() {
     if (action === "add") {
       const uuid = Date.now().toString();
       setLatestItemUUID(uuid);
-      await db.runAsync(ADDITEMS, [uuid, ...commonParams]);
+      await db.runAsync(ADD_ITEMS, [uuid, ...commonParams]);
     } else {
       setLatestItemUUID(item.uuid);
-      await db.runAsync(UPDATEITEMS, [...commonParams, item.uuid]);
+      await db.runAsync(UPDATE_ITEMS, [...commonParams, item.uuid]);
     }
     bottomSheet.close();
     storeClearAddItem();
@@ -239,7 +273,7 @@ export default function TallyIndex() {
             </Button>
             <Button
               onPress={async () => {
-                await db.runAsync(DELETEITEM, [operatingItem.uuid]);
+                await db.runAsync(DELETE_ITEM, [operatingItem.uuid]);
                 bottomSheet.close();
                 await refreshList();
               }}
