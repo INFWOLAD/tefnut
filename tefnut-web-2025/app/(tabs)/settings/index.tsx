@@ -36,9 +36,9 @@ export default function SettingsScreen() {
 						fontSize: 14,
 					}}
 				>
-					bt相关设置
+					磁力管理设置
 				</Text>
-				{/* BT相关设置 */}
+				{/* 磁力管理设置 */}
 				<BtSetting />
 				{env === 'development' && (
 					<>

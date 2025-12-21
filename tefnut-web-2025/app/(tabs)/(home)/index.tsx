@@ -42,7 +42,7 @@ export default function HomeScreen() {
 							);
 				}}
 			>
-				QBittorrent管理
+				磁力管理
 			</Button>
 			<Button
 				onPress={() => {
