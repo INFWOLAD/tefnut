@@ -21,6 +21,7 @@ import { BtTorrentInfo } from '@/components/bt/btTorrentInfo';
 import { BtEmptyList } from '@/components/bt/btEmptyList';
 import { BtDisplayCard } from '@/components/bt/btDisplayCard';
 import { BtToalInfoHud } from '@/components/bt/btTotalInfoHud';
+import { callbackResult } from '@/components/browser';
 
 export default function BtManageScreen() {
 	const { toast } = useToast();
@@ -143,10 +144,15 @@ export default function BtManageScreen() {
 		})();
 	}, []);
 
-	// 全局磁力，变化即添加,静默
+	// 全局磁力，变化即添加,静默, 唯一调用为浏览器捕获
 	useEffect(() => {
-		console.log(`调用下载${storeBrowserUrl}`);
-		storeBrowserUrl && handleSubmit(storeBrowserUrl, true);
+		(async () => {
+			console.log(`调用下载${storeBrowserUrl}`);
+			if (storeBrowserUrl) {
+				const result = await handleSubmit(storeBrowserUrl, true);
+				callbackResult(result);
+			}
+		})();
 		return () => {
 			console.log('清空浏览器捕获的磁力');
 			storeSetBrowserUrl('');
@@ -224,15 +230,16 @@ export default function BtManageScreen() {
 		console.log('Add torrent response:', response);
 		// 清空输入框
 		setMagnet('');
-		// 静默则直接返回
-		if (slience) return;
 		if (response && response.includes('Ok.')) {
+			// 静默返回成功标识
+			if (slience) return true;
 			toast({
 				title: '成功',
 				description: '已添加下载任务',
 				variant: 'success',
 			});
 		} else {
+			if (slience) return false;
 			toast({
 				title: '失败',
 				description: '添加任务失败，请检查链接或稍后重试',

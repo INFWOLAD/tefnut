@@ -5,7 +5,7 @@ import { useStore as useBtStore } from '@/stores/bt/btInfo';
 import { WebView } from 'react-native-webview';
 import type { WebView as WebViewType } from 'react-native-webview';
 import { Link, ArrowLeft } from 'lucide-react-native';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View } from './ui/view';
 import { showSuccessAlert } from '@/components/ui/alert';
 
@@ -17,12 +17,21 @@ interface BrowserSheetProps {
 	defaultUrl: string; // 浏览器默认打开地址
 }
 
-export function BrowserSheet({ catchMagnet = false, defaultUrl = 'https://www.bing.com' }) {
+export function callbackResult(result: boolean | undefined) {
+	console.log('Callback result:', result);
+	result ? showSuccessAlert('成功', '已添加至下载任务') : showSuccessAlert('失败', '添加任务失败');
+}
+
+export function BrowserSheet({
+	catchMagnet = false,
+	defaultUrl = 'https://www.bing.com',
+}: BrowserSheetProps) {
 	const webviewRef = useRef<WebViewType>(null);
 	const btStore = useBtStore();
 	const [canGoBack, setCanGoBack] = useState(false);
 	const [url, setUrl] = useState(defaultUrl);
 	const [browserUrl, setBrowserUrl] = useState(defaultUrl);
+	const [addedUrls, setAddedUrls] = useState<string[]>([]);
 
 	// input框回车后，浏览器url被更新，将浏览器url和输入框url解耦
 	function handleUrl() {
@@ -31,8 +40,13 @@ export function BrowserSheet({ catchMagnet = false, defaultUrl = 'https://www.bi
 
 	// 将url存入zustand
 	function handleMagnet(url: string) {
+		// 防止重复添加相同的磁力链接
+		if (addedUrls.includes(url)) {
+			showSuccessAlert('提示', '本此浏览器添加存在同链接任务', () => console.log('该任务已添加过'));
+			return;
+		}
+		setAddedUrls((prev) => [...prev, url]);
 		btStore.setBrowserUrl(url);
-		showSuccessAlert('成功', '已添加到下载任务', () => console.log('Success acknowledged'));
 	}
 
 	return (
@@ -83,6 +97,12 @@ export function BrowserSheet({ catchMagnet = false, defaultUrl = 'https://www.bi
             if (a && a.href.startsWith('magnet:')) {
               e.preventDefault(); // 阻止 WebView 自己加载
               window.ReactNativeWebView.postMessage(a.href);
+            }
+          });
+          document.addEventListener('copy', function (e) {
+            const selection = window.getSelection()?.toString();
+            if (selection && selection.startsWith('magnet:')) {
+              window.ReactNativeWebView.postMessage(selection);
             }
           });
         `}
