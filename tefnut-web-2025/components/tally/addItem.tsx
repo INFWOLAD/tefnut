@@ -1,46 +1,43 @@
 import { Text } from '@/components/ui/text';
 import { useTallyStore } from '@/stores/tally/tally';
-import { GroupedInput, GroupedInputItem, Input } from '../ui/input';
-import { DatePicker, DateRange } from '@/components/ui/date-picker';
+import { Input } from '@/components/ui/input';
 import { Picker } from '../ui/picker';
 import { useEffect, useState } from 'react';
 import {
 	BadgeJapaneseYen,
 	BadgePercent,
 	Landmark,
-	SquarePercent,
 	TicketPercent,
+	Timer,
+	TimerOff,
 } from 'lucide-react-native';
 import { bankInfo } from '@/utils/tallyBankCode';
 import BigNumber from 'bignumber.js';
 
 export default function AddItem() {
 	const storeAddItem = useTallyStore((state) => state.addItems);
-	const storeSaveAddItem = useTallyStore((state) => state.saveAddItem);
-	const setStoreSaveAddItem = useTallyStore((state) => state.setSaveAddItem);
 	const setStoreAddItem = useTallyStore((state) => state.setAddItem);
-
-	const [dateRange, setDateRange] = useState<DateRange | undefined>();
+	const [dateStartText, setDateStartText] = useState<string>('');
+	const [dateEndText, setDateEndText] = useState<string>('');
 	const bankOptions = Object.entries(bankInfo).map(([code, info]) => ({
 		label: info.name,
 		value: code,
 	}));
 
-	const saveOptions = [
-		{ label: '是', value: 'true' },
-		{ label: '否', value: 'false' },
-	];
-
 	useEffect(() => {
-		if (dateRange?.startDate && dateRange?.endDate) {
-			setStoreAddItem({
-				...storeAddItem,
-				// 以时间戳形式存储
-				startDate: dateRange.startDate?.getTime() || 0,
-				endDate: dateRange.endDate?.getTime() || 0,
-			});
+		console.log('item date info:', storeAddItem.startDate, storeAddItem.endDate);
+		// 拉起页面时初始化库表中时间戳，反显用户YYYYMMDD
+		if (storeAddItem.startDate) {
+			const date = new Date(Number(storeAddItem.startDate));
+			const formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+			setDateStartText(formattedDate);
 		}
-	}, [dateRange]);
+		if (storeAddItem.endDate) {
+			const date = new Date(Number(storeAddItem.endDate));
+			const formattedDate = `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+			setDateEndText(formattedDate);
+		}
+	}, []);
 
 	useEffect(() => {
 		if (storeAddItem.extraRate && storeAddItem.cashRate) {
@@ -51,6 +48,36 @@ export default function AddItem() {
 			});
 		}
 	}, [storeAddItem.extraRate, storeAddItem.cashRate]);
+
+	function handleDate(value: string, type: 'start' | 'end') {
+		let inputDate = value.replace(/[^\d]/g, '');
+		if (inputDate.length >= 5 && inputDate.length <= 6) {
+			inputDate = inputDate.slice(0, 4) + '/' + inputDate.slice(4);
+		} else if (inputDate.length > 6) {
+			inputDate = inputDate.slice(0, 4) + '/' + inputDate.slice(4, 6) + '/' + inputDate.slice(6, 8);
+		}
+		if (type === 'start') {
+			setDateStartText(inputDate);
+			if (inputDate.length === 10) {
+				const [y, m, d] = inputDate.split('/').map(Number);
+				const dateObj = new Date(y, m - 1, d).getTime();
+				setStoreAddItem({
+					...storeAddItem,
+					startDate: dateObj,
+				});
+			}
+		} else {
+			setDateEndText(inputDate);
+			if (inputDate.length === 10) {
+				const [y, m, d] = inputDate.split('/').map(Number);
+				const dateObj = new Date(y, m - 1, d).getTime();
+				setStoreAddItem({
+					...storeAddItem,
+					endDate: dateObj,
+				});
+			}
+		}
+	}
 
 	return (
 		<>
@@ -65,12 +92,21 @@ export default function AddItem() {
 				searchPlaceholder="搜索银行..."
 				modalTitle="银行"
 			/>
-			<DatePicker
-				mode="range"
-				label="存单日期"
-				value={dateRange}
-				onChange={setDateRange}
-				placeholder="选择日期范围"
+			<Input
+				icon={Timer}
+				label="起始日期"
+				value={dateStartText}
+				onChangeText={(text) => handleDate(text, 'start')}
+				placeholder="YYYY/MM/DD"
+				keyboardType={'numeric'}
+			/>
+			<Input
+				icon={TimerOff}
+				label="截至日期"
+				value={dateEndText}
+				onChangeText={(text) => handleDate(text, 'end')}
+				placeholder="YYYY/MM/DD"
+				keyboardType={'numeric'}
 			/>
 			<Input
 				icon={TicketPercent}
@@ -78,6 +114,7 @@ export default function AddItem() {
 				value={storeAddItem.cashRate}
 				onChangeText={(text) => setStoreAddItem({ ...storeAddItem, cashRate: text })}
 				placeholder="输入现金利率(%)"
+				keyboardType={'numeric'}
 			/>
 			<Input
 				icon={BadgePercent}
@@ -85,13 +122,7 @@ export default function AddItem() {
 				value={storeAddItem.extraRate}
 				onChangeText={(text) => setStoreAddItem({ ...storeAddItem, extraRate: text })}
 				placeholder="输入额外利率(%)"
-			/>
-			<Input
-				icon={SquarePercent}
-				label="汇总利率"
-				value={storeAddItem.totalRate}
-				onChangeText={(text) => setStoreAddItem({ ...storeAddItem, totalRate: text })}
-				placeholder="输入总利率(%)"
+				keyboardType={'numeric'}
 			/>
 			<Input
 				icon={BadgeJapaneseYen}
@@ -99,15 +130,7 @@ export default function AddItem() {
 				value={storeAddItem.amount}
 				onChangeText={(text) => setStoreAddItem({ ...storeAddItem, amount: text })}
 				placeholder="输入存单金额"
-			/>
-			<Picker
-				icon={SquarePercent}
-				label="保存信息"
-				options={saveOptions}
-				value={storeSaveAddItem ? 'true' : 'false'}
-				onValueChange={(value) => setStoreSaveAddItem(value === 'true')}
-				placeholder="选择是否保存"
-				modalTitle="保存选项"
+				keyboardType={'numeric'}
 			/>
 		</>
 	);

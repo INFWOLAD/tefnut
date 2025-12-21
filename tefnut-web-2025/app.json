@@ -3,7 +3,7 @@
 		"name": "tefnut",
 		"slug": "tefnut",
 		"scheme": "tefnut",
-		"version": "0.1.5",
+		"version": "0.1.6",
 		"orientation": "portrait",
 		"icon": "./assets/images/icon.png",
 		"userInterfaceStyle": "automatic",
