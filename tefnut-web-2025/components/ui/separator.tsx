@@ -4,27 +4,24 @@ import React from 'react';
 import { ViewStyle } from 'react-native';
 
 interface SeparatorProps {
-  orientation?: 'horizontal' | 'vertical';
-  style?: ViewStyle;
+	orientation?: 'horizontal' | 'vertical';
+	style?: ViewStyle;
 }
 
-export function Separator({
-  orientation = 'horizontal',
-  style,
-}: SeparatorProps) {
-  const borderColor = useColor('border');
+export function Separator({ orientation = 'horizontal', style }: SeparatorProps) {
+	const borderColor = useColor('border');
 
-  return (
-    <View
-      style={[
-        {
-          backgroundColor: borderColor,
-          ...(orientation === 'horizontal'
-            ? { height: 1, width: '100%' }
-            : { width: 1, height: '100%' }),
-        },
-        style,
-      ]}
-    />
-  );
+	return (
+		<View
+			style={[
+				{
+					backgroundColor: borderColor,
+					...(orientation === 'horizontal'
+						? { height: 1, width: '100%' }
+						: { width: 1, height: '100%' }),
+				},
+				style,
+			]}
+		/>
+	);
 }

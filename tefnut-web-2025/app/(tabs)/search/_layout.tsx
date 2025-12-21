@@ -1,60 +1,56 @@
-import { Text } from "@/components/ui/text";
-import { useColor } from "@/hooks/useColor";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { SearchProvider, useSearch } from "@/providers/search-context";
-import { isLiquidGlassAvailable } from "expo-glass-effect";
-import { Stack } from "expo-router";
-import { Platform } from "react-native";
+import { Text } from '@/components/ui/text';
+import { useColor } from '@/hooks/useColor';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { SearchProvider, useSearch } from '@/providers/search-context';
+import { isLiquidGlassAvailable } from 'expo-glass-effect';
+import { Stack } from 'expo-router';
+import { Platform } from 'react-native';
 
 function SearchLayoutContent() {
-  const theme = useColorScheme();
-  const text = useColor("text");
-  const background = useColor("background");
-  const { setSearchText } = useSearch();
+	const theme = useColorScheme();
+	const text = useColor('text');
+	const background = useColor('background');
+	const { setSearchText } = useSearch();
 
-  return (
-    <Stack
-      screenOptions={{
-        headerLargeTitle: true,
-        headerLargeTitleShadowVisible: false,
-        headerTintColor: text,
-        headerBlurEffect: isLiquidGlassAvailable()
-          ? undefined
-          : theme === "dark"
-            ? "systemMaterialDark"
-            : "systemMaterialLight",
-        headerStyle: {
-          backgroundColor: isLiquidGlassAvailable()
-            ? "transparent"
-            : background,
-        },
-      }}
-    >
-      <Stack.Screen
-        name="index"
-        options={{
-          title: "搜索",
-          headerTitle: () =>
-            Platform.OS === "android" ? (
-              <Text variant="heading">搜索</Text>
-            ) : undefined,
-          headerSearchBarOptions: {
-            placement: "automatic",
-            placeholder: "Search",
-            onChangeText: (event) => {
-              setSearchText(event.nativeEvent.text);
-            },
-          },
-        }}
-      />
-    </Stack>
-  );
+	return (
+		<Stack
+			screenOptions={{
+				headerLargeTitle: true,
+				headerLargeTitleShadowVisible: false,
+				headerTintColor: text,
+				headerBlurEffect: isLiquidGlassAvailable()
+					? undefined
+					: theme === 'dark'
+						? 'systemMaterialDark'
+						: 'systemMaterialLight',
+				headerStyle: {
+					backgroundColor: isLiquidGlassAvailable() ? 'transparent' : background,
+				},
+			}}
+		>
+			<Stack.Screen
+				name="index"
+				options={{
+					title: '搜索',
+					headerTitle: () =>
+						Platform.OS === 'android' ? <Text variant="heading">搜索</Text> : undefined,
+					headerSearchBarOptions: {
+						placement: 'automatic',
+						placeholder: 'Search',
+						onChangeText: (event) => {
+							setSearchText(event.nativeEvent.text);
+						},
+					},
+				}}
+			/>
+		</Stack>
+	);
 }
 
 export default function SearchLayout() {
-  return (
-    <SearchProvider>
-      <SearchLayoutContent />
-    </SearchProvider>
-  );
+	return (
+		<SearchProvider>
+			<SearchLayoutContent />
+		</SearchProvider>
+	);
 }
