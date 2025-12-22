@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { View } from '@/components/ui/view';
-import { useColor } from '@/hooks/useColor';
 import { useRouter } from 'expo-router';
 import { useStore as useBtStore } from '@/stores/bt/btInfo';
 import { showSuccessAlert } from '@/components/ui/alert';
@@ -26,7 +25,7 @@ export default function HomeScreen() {
 					textAlign: 'center',
 				}}
 			>
-				Tefnut ({(env !== 'production' && env) || 'Beta'})
+				Tefnut ({env !== 'production' && env})
 			</Text>
 
 			{/* <Link asChild href="/sheet">

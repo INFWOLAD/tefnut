@@ -40,10 +40,16 @@ export default function TallyChart() {
 			);
 
 			// 过滤掉 null
+			console.log('results', results);
 			setPieData(results.filter(Boolean) as Array<{ label: string; value: number }>);
-			setLoading(false);
 		})();
 	}, []);
+
+	useEffect(() => {
+		if (pieData.length > 0) {
+			setLoading(false);
+		}
+	}, [pieData]);
 
 	return (
 		<ScrollView style={{ flex: 1, paddingTop: 40 }}>
