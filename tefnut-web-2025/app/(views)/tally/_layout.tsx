@@ -41,8 +41,7 @@ export default function BtLayout() {
 						headerLeft: () => (
 							<Pressable
 								onPress={() => {
-									router.dismissAll();
-									router.replace('/');
+									router.back();
 								}}
 								style={{
 									padding: 6,
