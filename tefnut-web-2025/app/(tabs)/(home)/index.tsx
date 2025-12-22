@@ -25,7 +25,7 @@ export default function HomeScreen() {
 					textAlign: 'center',
 				}}
 			>
-				Tefnut ({env !== 'production' && env})
+				Tefnut {env !== 'production' && `(${env})`}
 			</Text>
 
 			{/* <Link asChild href="/sheet">

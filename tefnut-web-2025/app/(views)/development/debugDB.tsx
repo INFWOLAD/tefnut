@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TextInput, Pressable } from 'react-native';
+import { TextInput, Pressable } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/button';
-
+import { Text } from '@/components/ui/text';
+import { View } from '@/components/ui/view';
+import { ScrollView } from '@/components/ui/scroll-view';
 const db = SQLite.openDatabaseSync('app.db');
 
 export default function DebugDBScreen() {
