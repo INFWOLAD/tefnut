@@ -34,11 +34,11 @@ export default function HomeScreen() {
 			<Button
 				onPress={() => {
 					console.log('Navigating to /bt/manage');
-					btloginfo.loggedIn
-						? router.push('/bt/manage')
-						: showSuccessAlert('请确认登录状态', '您可以在设置-BT设置中登入以使用该功能', () =>
+					btloginfo.loggedIn === 'disconnected' || btloginfo.loggedIn === 'waitting'
+						? showSuccessAlert('请确认登录状态', '您可以在设置-BT设置中登入以使用该功能', () =>
 								console.log('未登录完成'),
-							);
+							)
+						: router.push('/bt/manage');
 				}}
 			>
 				磁力管理

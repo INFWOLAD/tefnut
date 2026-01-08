@@ -5,7 +5,7 @@ type btInfo = {
 	selectedUuid: string; // 当前选择的用户uuid
 	selectedUser?: any; // 当前选择的服务器名
 	userList: Array<any>; // 用户信息列表
-	loggedIn: boolean; // 严格来说是验证状态，标识已经登录成功过
+	loggedIn: 'connected' | 'disconnected' | 'waitting' | 'firewalled'; // 登录状态，connected/disconnected/waitting/firewalled(表示受限连接，不影响正常使用)
 	browserUrl: string; // 磁力连接地址
 	defaultUrl: string; // 浏览器默认地址
 	listOrder: 'eta' | 'dlspeed' | 'ratio' | 'name' | 'state' | 'time_active'; // 列表排序方式
@@ -13,7 +13,7 @@ type btInfo = {
 	totalDownloadSpeed: number; // 总下载速度
 	totalUploadSpeed: number; // 总上传速度
 
-	setLoggedIn: (loggedIn: boolean) => void;
+	setLoggedIn: (loggedIn: 'connected' | 'disconnected' | 'waitting' | 'firewalled') => void;
 	setSelectedUuid: (selectedUuid: string) => void;
 	setSelectedUser: (selectedUser: any) => void;
 	setBrowserUrl: (browserUrl: string) => void;
@@ -26,7 +26,7 @@ type btInfo = {
 };
 
 export const useStore = create<btInfo>((set) => ({
-	loggedIn: false,
+	loggedIn: 'waitting',
 	browserUrl: '',
 	defaultUrl: 'https://www.bing.com',
 	torrentsList: [],
@@ -38,7 +38,8 @@ export const useStore = create<btInfo>((set) => ({
 	totalUploadSpeed: 0,
 
 	setUserList: (userList: Array<any>) => set({ userList }),
-	setLoggedIn: (loggedIn: boolean) => set({ loggedIn }),
+	setLoggedIn: (loggedIn: 'connected' | 'disconnected' | 'waitting' | 'firewalled') =>
+		set({ loggedIn }),
 	setBrowserUrl: (browserUrl: string) => set({ browserUrl }),
 	setDefaultUrl: (defaultUrl: string) => set({ defaultUrl }),
 	setTorrentsList: (torrentsList: Array<any>) => set({ torrentsList }),

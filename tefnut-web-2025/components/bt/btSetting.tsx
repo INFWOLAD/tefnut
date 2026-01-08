@@ -112,11 +112,11 @@ export default function BtSetting() {
 					);
 					// 登录成功放入缓存
 					if (result) {
-						btloginfo.setLoggedIn(true);
+						btloginfo.setLoggedIn('connected');
 						storeSetSelectedUser(selected);
 						await SecureStore.setItemAsync('bt_selectedUuid', selected.uuid);
 					} else {
-						btloginfo.setLoggedIn(false);
+						btloginfo.setLoggedIn('disconnected');
 					}
 					console.log('Selected BT user:', selected);
 					if (intervalRef.current) {
@@ -149,12 +149,17 @@ export default function BtSetting() {
 						toast: null,
 						withOutLog: true,
 					});
-					if (result.connection_status !== 'connected' && intervalRef.current !== null) {
-						btloginfo.setLoggedIn(false);
+					if (result.connection_status === 'disconnected' && intervalRef.current !== null) {
+						btloginfo.setLoggedIn('disconnected');
 						// 连接disconnect后清理计时器
 						clearInterval(intervalRef.current);
 						intervalRef.current = null;
 					} else if (result.connection_status === 'connected') {
+						btloginfo.setLoggedIn('connected');
+						storeSetTotalDownloadSpeed(result.dl_info_speed);
+						storeSetTotalUploadSpeed(result.up_info_speed);
+					} else if (result.connection_status === 'firewalled') {
+						btloginfo.setLoggedIn('firewalled');
 						storeSetTotalDownloadSpeed(result.dl_info_speed);
 						storeSetTotalUploadSpeed(result.up_info_speed);
 					}
@@ -217,9 +222,21 @@ export default function BtSetting() {
 										alignItems: 'center',
 									}}
 								>
-									<Text>{loading ? '验证中' : btloginfo.loggedIn ? '已连接' : '无连接'}</Text>
+									<Text>
+										{(() => {
+											if (btloginfo.loggedIn === 'connected') return '已连接';
+											if (btloginfo.loggedIn === 'disconnected') return '未连接';
+											if (btloginfo.loggedIn === 'firewalled') return '受限连接';
+											if (btloginfo.loggedIn === 'waitting' || loading) return '连接中...';
+										})()}
+									</Text>
 									<Badge
-										variant={loading ? 'outline' : btloginfo.loggedIn ? 'success' : 'destructive'}
+										variant={(() => {
+											if (btloginfo.loggedIn === 'connected') return 'success';
+											if (btloginfo.loggedIn === 'disconnected') return 'destructive';
+											if (btloginfo.loggedIn === 'firewalled') return 'default';
+											if (btloginfo.loggedIn === 'waitting' || loading) return 'outline';
+										})()}
 										style={{
 											width: 12,
 											height: 12,
@@ -299,7 +316,7 @@ export default function BtSetting() {
 											storeSetSelectedUuid('');
 											storeSetSelectedUser({});
 											SecureStore.deleteItemAsync('bt_selectedUuid');
-											btloginfo.setLoggedIn(false);
+											btloginfo.setLoggedIn('disconnected');
 										}
 									}}
 								>
