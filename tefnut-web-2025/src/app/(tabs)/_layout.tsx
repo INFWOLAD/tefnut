@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { useColor } from '@/hooks/useColor';
-import { Icon, Label, NativeTabs, VectorIcon } from 'expo-router/unstable-native-tabs';
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
 
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 export default function TabsLayout() {
@@ -31,18 +31,26 @@ export default function TabsLayout() {
 		>
 			<NativeTabs.Trigger name="(home)">
 				{Platform.select({
-					ios: <Icon sf="house.fill" />,
-					android: <Icon src={<VectorIcon family={FontAwesome6} name="house-chimney" />} />,
+					ios: <NativeTabs.Trigger.Icon sf="house.fill" />,
+					android: (
+						<NativeTabs.Trigger.Icon
+							src={<NativeTabs.Trigger.VectorIcon family={FontAwesome6} name="house-chimney" />}
+						/>
+					),
 				})}
-				<Label>首页</Label>
+				<NativeTabs.Trigger.Label>首页</NativeTabs.Trigger.Label>
 			</NativeTabs.Trigger>
 
 			<NativeTabs.Trigger name="settings">
 				{Platform.select({
-					ios: <Icon sf="gear" />,
-					android: <Icon src={<VectorIcon family={FontAwesome6} name="user-gear" />} />,
+					ios: <NativeTabs.Trigger.Icon sf="gear" />,
+					android: (
+						<NativeTabs.Trigger.Icon
+							src={<NativeTabs.Trigger.VectorIcon family={FontAwesome6} name="user-gear" />}
+						/>
+					),
 				})}
-				<Label>设置</Label>
+				<NativeTabs.Trigger.Label>设置</NativeTabs.Trigger.Label>
 			</NativeTabs.Trigger>
 
 			{/* <NativeTabs.Trigger
