@@ -17,4 +17,5 @@ export default ({ config: appConfig }: ConfigContext) => ({
 		APP_ENV: ENV,
 		// API_URL: process.env.API_URL,
 	},
+	plugins: ['expo-font', 'expo-image', 'expo-secure-store'],
 });
